@@ -21,9 +21,13 @@ class App extends BaseConfig
     {
         parent::__construct();
 
-        // Atur baseURL dinamis jika tersedia dari server
+        // Atur baseURL dinamis jika tersedia dari server (mendukung reverse proxy HTTPS)
         if (isset($_SERVER['HTTP_HOST'])) {
-            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $scheme = 'http';
+            if ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+                (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+                $scheme = 'https';
+            }
             $this->baseURL = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/';
         }
     }
