@@ -40,4 +40,4 @@ else
 fi
 
 echo "=== Executing Default Zeabur Startup ==="
-exec _startup
+_startup
