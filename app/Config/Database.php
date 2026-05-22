@@ -193,6 +193,15 @@ class Database extends Config
     {
         parent::__construct();
 
+        // Map automatically injected database environment variables from Zeabur/Docker if they exist
+        if ($mysqlHost = getenv('MYSQL_HOST')) {
+            $this->default['hostname'] = $mysqlHost;
+            $this->default['username'] = getenv('MYSQL_USERNAME') ?: $this->default['username'];
+            $this->default['password'] = getenv('MYSQL_PASSWORD') ?: $this->default['password'];
+            $this->default['database'] = getenv('MYSQL_DATABASE') ?: $this->default['database'];
+            $this->default['port']     = getenv('MYSQL_PORT') ?: $this->default['port'];
+        }
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.
