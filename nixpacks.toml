@@ -1,0 +1,6 @@
+[phases.fix-permissions]
+dependsOn = ["install"]
+cmds = [
+  "mkdir -p writable/cache writable/debugbar writable/logs writable/session writable/uploads writable/patches",
+  "chmod -R 777 writable"
+]

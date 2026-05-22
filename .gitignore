@@ -1,9 +1,19 @@
 # Ignored files
 .env
 vendor/
-writable/*
-!writable/index.html
-!writable/keep
+# CodeIgniter 4 Writable Directory
+writable/cache/*
+!writable/cache/.gitkeep
+writable/debugbar/*
+!writable/debugbar/.gitkeep
+writable/logs/*
+!writable/logs/.gitkeep
+writable/session/*
+!writable/session/.gitkeep
+writable/uploads/*
+!writable/uploads/.gitkeep
+writable/patches/*
+!writable/patches/.gitkeep
 
 # Database and Archives
 *.sql
