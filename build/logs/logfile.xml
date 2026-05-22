@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/cbt/htdocs/cbt.smkhassina.sch.id/phpunit.xml.dist" tests="5" assertions="7" errors="0" failures="0" skipped="0" time="0.066590">
+    <testsuite name="App" tests="5" assertions="7" errors="0" failures="0" skipped="0" time="0.066590">
+      <testsuite name="ExampleDatabaseTest" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/database/ExampleDatabaseTest.php" tests="2" assertions="3" errors="0" failures="0" skipped="0" time="0.054994">
+        <testcase name="testModelFindAll" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/database/ExampleDatabaseTest.php" line="17" class="ExampleDatabaseTest" classname="ExampleDatabaseTest" assertions="1" time="0.049391"/>
+        <testcase name="testSoftDeleteLeavesRow" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/database/ExampleDatabaseTest.php" line="28" class="ExampleDatabaseTest" classname="ExampleDatabaseTest" assertions="2" time="0.005603"/>
+      </testsuite>
+      <testsuite name="ExampleSessionTest" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/session/ExampleSessionTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000955">
+        <testcase name="testSessionSimple" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/session/ExampleSessionTest.php" line="10" class="ExampleSessionTest" classname="ExampleSessionTest" assertions="1" time="0.000955"/>
+      </testsuite>
+      <testsuite name="HealthTest" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/unit/HealthTest.php" tests="2" assertions="3" errors="0" failures="0" skipped="0" time="0.010640">
+        <testcase name="testIsDefinedAppPath" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/unit/HealthTest.php" line="12" class="HealthTest" classname="HealthTest" assertions="1" time="0.000650"/>
+        <testcase name="testBaseUrlHasBeenSet" file="/home/cbt/htdocs/cbt.smkhassina.sch.id/tests/unit/HealthTest.php" line="17" class="HealthTest" classname="HealthTest" assertions="2" time="0.009991"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

@@ -1,0 +1,17 @@
+# Ignored files
+.env
+vendor/
+writable/*
+!writable/index.html
+!writable/keep
+
+# Database and Archives
+*.sql
+*.zip
+*.tar.gz
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>startURL</key>
+  <string>https://cbt.smkhassina.sch.id/</string>
+  <key>browserUserAgent</key>
+  <string>CandyCBTBro</string>
+  <key>browserExamMode</key>
+  <true/>
+  <key>fullscreen</key>
+  <true/>
+  <key>enableBrowser</key>
+  <true/>
+  <key>allowPrintScreen</key>
+  <false/>
+  <key>allowSwitchApps</key>
+  <false/>
+  <key>disableContextMenu</key>
+  <true/>
+  <key>quitPasswordHash</key>
+  <data>aa8ZCguVY+1f/ZI9HhMCKmV8QuL9mIeYQZ+jMcqlTro=</data>
+  <key>quitPasswordSalt</key>
+  <data>2PnhIw7W5Hwz6bZXCbsCxg==</data>
+  <key>quitPasswordHashIterations</key>
+  <integer>100000</integer>
+  <key>quitPasswordEnabled</key>
+  <true/>
+  <key>showQuitButton</key>
+  <true/>
+  <key>enableSingleAppMode</key>
+  <true/>
+  <key>forceSingleAppMode</key>
+  <true/>
+  <key>allowLeaving</key>
+  <false/>
+  <key>singleAppModeConfirm</key>
+  <true/>
+</dict>
+</plist>
