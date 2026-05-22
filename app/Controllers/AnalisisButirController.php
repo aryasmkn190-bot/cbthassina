@@ -801,4 +801,35 @@ class AnalisisButirController extends BaseController
         if ($d >= 0.20) return 'Perlu Revisi';
         return 'Dibuang';
     }
+
+    /**
+     * Tampilan cetak PDF analisis butir soal (portrait).
+     */
+    public function print($ujianId)
+    {
+        $ujian = $this->ujianModel->getWithNamaMapel($ujianId);
+        if (!$ujian) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $bankSoal = $this->bankSoalModel->find($ujian['bank_soal_id']);
+
+        // Otorisasi
+        if (has_role('guru') && $bankSoal['created_by'] !== user_id()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $filterKelas = $this->request->getGet('kelas');
+
+        $data = [
+            'title'       => 'Cetak Analisis Butir Soal',
+            'setting'     => $this->appSetting(),
+            'ujian'       => $ujian,
+            'bankSoal'    => $bankSoal,
+            'ujianId'     => $ujianId,
+            'filterKelas' => $filterKelas,
+        ];
+
+        return view('Panel/AnalisisButir/analisis_print', $data);
+    }
 }

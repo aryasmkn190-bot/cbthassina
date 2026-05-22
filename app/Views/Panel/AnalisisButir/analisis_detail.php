@@ -96,6 +96,25 @@
         box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
     }
     
+    .btn-gradient-danger {
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+        color: #fff !important;
+        border: none;
+        border-radius: 30px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+        transition: all 0.3s ease;
+        height: 38px;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-gradient-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(244, 63, 94, 0.3);
+    }
+    
     .btn-outline-modern {
         border: 1.5px solid rgba(0, 0, 0, 0.08);
         border-radius: 30px;
@@ -465,6 +484,9 @@
             </button>
             <button id="btnExport" class="btn btn-gradient-success" title="Ekspor Data ke Excel">
                 <i data-feather="download" style="width: 15px; height: 15px;"></i> Export Excel
+            </button>
+            <button id="btnExportPdf" class="btn btn-gradient-danger" title="Ekspor Data ke PDF">
+                <i data-feather="file" style="width: 15px; height: 15px;"></i> Export PDF
             </button>
             <a href="<?= base_url('panel/analisis-butir/ujian/' . esc($bankSoal['id'], 'url')) ?>" class="btn btn-outline-modern">
                 <i data-feather="arrow-left" style="width: 15px; height: 15px;"></i> Kembali
@@ -1226,6 +1248,13 @@ $(document).ready(function() {
         let url = "<?= base_url('panel/analisis-butir/export/') ?>" + ujianId;
         if (kelas) url += '?kelas=' + encodeURIComponent(kelas);
         window.location.href = url;
+    });
+
+    $('#btnExportPdf').on('click', function() {
+        const kelas = $('#filterKelas').val();
+        let url = "<?= base_url('panel/analisis-butir/print/') ?>" + ujianId;
+        if (kelas) url += '?kelas=' + encodeURIComponent(kelas);
+        window.open(url, '_blank');
     });
 
     // Run first load

@@ -267,6 +267,7 @@ $routes->group('panel', ['filter' => 'role:admin,guru'], function ($routes) {
         $routes->get('detail/(:segment)', 'AnalisisButirController::detail/$1');
         $routes->get('api/(:segment)', 'AnalisisButirController::apiAnalisis/$1');
         $routes->get('export/(:segment)', 'AnalisisButirController::exportExcel/$1');
+        $routes->get('print/(:segment)', 'AnalisisButirController::print/$1');
     });
     $routes->group('hasil-ujian', function ($routes) {
         $routes->get('get/(:segment)', 'HasilUjianController::getAll/$1');

@@ -1509,7 +1509,12 @@
 
             if (!isEdit) {
                 pilihanList.html('');
-                const opsi = jenis === 'benar_salah' ? ['Benar', 'Salah'] : [''];
+                let opsi = [''];
+                if (jenis === 'benar_salah') {
+                    opsi = ['Benar', 'Salah'];
+                } else if (jenis === 'pg' || jenis === 'mpg') {
+                    opsi = ['', '', '', '', ''];
+                }
                 opsi.forEach(val => {
                     pilihanList.append(renderOpsi(val, jenis));
                 });
