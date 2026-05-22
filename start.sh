@@ -38,6 +38,3 @@ else
   echo "upload_max_filesize = 50M" > public/.user.ini
   echo "post_max_size = 50M" >> public/.user.ini
 fi
-
-echo "=== Executing Default Zeabur Startup ==="
-_startup
