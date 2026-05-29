@@ -159,4 +159,41 @@ class Cache extends BaseConfig
      * @var bool|list<string>
      */
     public $cacheQueryString = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Auto-detect Redis config from session.savePath if not explicitly set
+        $envSessionDriver = env('session.driver');
+        $envCacheHandler = env('cache.handler');
+
+        if (empty($envCacheHandler)) {
+            if ($envSessionDriver === 'CodeIgniter\\Session\\Handlers\\RedisHandler') {
+                $this->handler = 'predis';
+            }
+        }
+
+        if (in_array($this->handler, ['redis', 'predis'], true)) {
+            $envRedisHost = env('cache.redis.host');
+            if (empty($envRedisHost)) {
+                $sessionSavePath = env('session.savePath');
+                if (!empty($sessionSavePath) && strpos($sessionSavePath, 'tcp://') === 0) {
+                    $url = parse_url($sessionSavePath);
+                    if (isset($url['host'])) {
+                        $this->redis['host'] = $url['host'];
+                    }
+                    if (isset($url['port'])) {
+                        $this->redis['port'] = (int) $url['port'];
+                    }
+                    if (isset($url['query'])) {
+                        parse_str($url['query'], $query);
+                        if (isset($query['auth'])) {
+                            $this->redis['password'] = $query['auth'];
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
