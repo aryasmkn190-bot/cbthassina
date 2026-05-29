@@ -8,7 +8,7 @@ use CodeIgniter\Filters\FilterInterface;
 
 class RateLimitFilter implements FilterInterface
 {
-    protected $limit = 60; // Max requests per minute
+    protected $limit = 3000; // Max requests per minute
     protected $window = 60; // Time window in seconds
 
     public function before(RequestInterface $request, $arguments = null)

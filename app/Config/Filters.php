@@ -84,6 +84,11 @@ class Filters extends BaseFilters
             'rate_limit' => ['except' => [
                 'install',
                 'install/*',
+                'panel/*',
+                'peserta/*',
+                'siswa/*',
+                'share/*',
+                'api/*',
             ]],
             // 'honeypot',
             // 'csrf',
