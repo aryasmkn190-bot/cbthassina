@@ -43,12 +43,21 @@ abstract class BaseController extends Controller
                 return redirect()->to(base_url('install'))->send(); // aman dari loop
             }
 
+            $cache = service('cache');
 
-            $this->settings = new \App\Models\SettingsModel();
-            $this->exambrosettings = new \App\Models\ExambroSettingModel();
+            $this->appSetting = $cache->get('app_setting');
+            if ($this->appSetting === null) {
+                $this->settings = new \App\Models\SettingsModel();
+                $this->appSetting = $this->settings->get_by_id(1);
+                $cache->save('app_setting', $this->appSetting, 86400); // 24 hours
+            }
 
-            $this->appSetting = $this->settings->get_by_id(1);
-            $this->exambroSetting = $this->exambrosettings->getExambroSetting(1);
+            $this->exambroSetting = $cache->get('exambro_setting');
+            if ($this->exambroSetting === null) {
+                $this->exambrosettings = new \App\Models\ExambroSettingModel();
+                $this->exambroSetting = $this->exambrosettings->getExambroSetting(1);
+                $cache->save('exambro_setting', $this->exambroSetting, 86400); // 24 hours
+            }
         }
     }
 

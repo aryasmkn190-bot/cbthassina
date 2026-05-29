@@ -237,7 +237,12 @@ class UjianShareController extends BaseController
             return $this->fail('Data urutan soal atau opsi tidak valid.');
         }
 
-        $soal = $this->soalModel->getSoalByUrutanFinal($soalIds, $opsiUrutan);
+        $ujian = $this->ujianModel->select('bank_soal_id')->find($ujianId);
+        if (!$ujian) {
+            return $this->fail('Ujian tidak ditemukan.');
+        }
+
+        $soal = $this->soalModel->getSoalByUrutanCached($ujian['bank_soal_id'], $soalIds, $opsiUrutan);
 
         // Hilangkan kunci jawaban & hitung max_select untuk MPG
         foreach ($soal as &$s) {
@@ -320,22 +325,15 @@ class UjianShareController extends BaseController
             return $this->fail('Data tidak lengkap atau salah format');
         }
 
+        $validJawaban = [];
         foreach ($jawabanInput as $soalId => $jawaban) {
-            if (!is_array($jawaban)) {
-                continue;
+            if (is_array($jawaban)) {
+                $validJawaban[$soalId] = $jawaban;
             }
+        }
 
-            $data = [
-                'id'         => Uuid::uuid4()->toString(),
-                'ujian_id'   => $ujianId,
-                'peserta_id' => $pesertaId,
-                'guest_id'   => $guestId,
-                'soal_id'    => $soalId,
-                'jawaban'    => json_encode($jawaban, JSON_UNESCAPED_UNICODE),
-                'skor'       => 0,
-            ];
-
-            $this->jawabanModel->saveJawaban($data);
+        if (!empty($validJawaban)) {
+            $this->jawabanModel->saveJawabanCached($ujianId, $pesertaId, $validJawaban, $guestId);
         }
 
         return $this->response->setJSON([
@@ -354,16 +352,7 @@ class UjianShareController extends BaseController
             return $this->fail('Peserta atau Guest belum terdeteksi');
         }
 
-        $jawabanModel = new JawabanModel();
-        $rows = $jawabanModel->where('ujian_id', $ujianId);
-
-        if ($pesertaId) {
-            $rows = $rows->where('peserta_id', $pesertaId);
-        } else {
-            $rows = $rows->where('guest_id', $guestId);
-        }
-
-        $rows = $rows->findAll();
+        $rows = $this->jawabanModel->getJawabanCached($ujianId, $pesertaId, $guestId);
 
         $data = [];
         foreach ($rows as $row) {
@@ -469,17 +458,8 @@ class UjianShareController extends BaseController
         $ujian = $this->ujianModel->find($ujianId);
         $daftarSoal = $this->soalModel->where('bank_soal_id', $ujian['bank_soal_id'])->findAll();
 
-        // Ambil jawaban sesuai mode
-        $jawabanPesertaList = $this->jawabanModel
-            ->where('ujian_id', $ujianId);
-
-        if ($pesertaId) {
-            $jawabanPesertaList = $jawabanPesertaList->where('peserta_id', $pesertaId);
-        } else {
-            $jawabanPesertaList = $jawabanPesertaList->where('guest_id', $guestId);
-        }
-
-        $jawabanPesertaList = $jawabanPesertaList->findAll();
+        // Ambil jawaban dari Redis
+        $jawabanPesertaList = array_values($this->jawabanModel->getJawabanCached($ujianId, $pesertaId, $guestId));
 
         // Validasi durasi minimal
         $waktuMulai = strtotime($hasilUjian['waktu_mulai']);
@@ -639,14 +619,8 @@ class UjianShareController extends BaseController
             'jawaban_json'  => json_encode($arsipJawaban),
         ]);
 
-        // 🔥 Hapus jawaban peserta/guest dari tabel jawaban
-        $deleteQuery = $this->jawabanModel->where('ujian_id', $ujianId);
-        if ($pesertaId) {
-            $deleteQuery->where('peserta_id', $pesertaId);
-        } else {
-            $deleteQuery->where('guest_id', $guestId);
-        }
-        $deleteQuery->delete();
+        // 🔥 Hapus jawaban peserta/guest dari Redis & DB
+        $this->jawabanModel->deleteJawabanCached($ujianId, $pesertaId, $guestId);
 
         return $this->response->setJSON([
             'status'        => true,

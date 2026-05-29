@@ -51,6 +51,10 @@ class AuthController extends BaseController
             'role'     => $user['roles'],
         ]);
 
+        // Save session ID to Redis for concurrent session check
+        $sessionID = session_id();
+        service('cache')->save("active_session:{$user['id']}", $sessionID, 86400);
+
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Login berhasil.',

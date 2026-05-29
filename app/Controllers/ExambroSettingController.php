@@ -81,6 +81,7 @@ class ExambroSettingController extends BaseController
             $data['updated_at'] = date('Y-m-d H:i:s');
 
             if (!empty($data) && $this->settingsModel->updateExambroSetting($id, $data)) {
+                service('cache')->delete('exambro_setting');
                 return $this->response->setJSON(['success' => true, 'message' => 'Pengaturan berhasil diperbarui.']);
             }
 

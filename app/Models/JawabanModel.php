@@ -63,4 +63,72 @@ class JawabanModel extends Model
             return $this->insert($data);
         }
     }
+
+    public function saveJawabanCached(string $ujianId, ?string $pesertaId, array $jawabanInput, ?string $guestId = null)
+    {
+        $cache = service('cache');
+        $id = $pesertaId ?: $guestId;
+        $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+
+        $answers = $cache->get($cacheKey);
+        if ($answers === null) {
+            $answers = $this->getJawabanCached($ujianId, $pesertaId, $guestId);
+        }
+
+        foreach ($jawabanInput as $soalId => $jawaban) {
+            $answers[$soalId] = [
+                'soal_id' => $soalId,
+                'jawaban' => json_encode($jawaban, JSON_UNESCAPED_UNICODE)
+            ];
+        }
+
+        $cache->save($cacheKey, $answers, 14400);
+    }
+
+    public function getJawabanCached(string $ujianId, ?string $pesertaId, ?string $guestId = null): array
+    {
+        $cache = service('cache');
+        $id = $pesertaId ?: $guestId;
+        $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+
+        $answers = $cache->get($cacheKey);
+        if ($answers === null) {
+            $query = $this->where('ujian_id', $ujianId);
+            if ($pesertaId) {
+                $query = $query->where('peserta_id', $pesertaId);
+            } else {
+                $query = $query->where('guest_id', $guestId);
+            }
+            $rows = $query->findAll();
+
+            $answers = [];
+            foreach ($rows as $row) {
+                $answers[$row['soal_id']] = [
+                    'soal_id' => $row['soal_id'],
+                    'jawaban' => $row['jawaban']
+                ];
+            }
+
+            $cache->save($cacheKey, $answers, 14400);
+        }
+
+        return $answers;
+    }
+
+    public function deleteJawabanCached(string $ujianId, ?string $pesertaId, ?string $guestId = null)
+    {
+        $cache = service('cache');
+        $id = $pesertaId ?: $guestId;
+        $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+
+        $cache->delete($cacheKey);
+
+        $query = $this->where('ujian_id', $ujianId);
+        if ($pesertaId) {
+            $query = $query->where('peserta_id', $pesertaId);
+        } else {
+            $query = $query->where('guest_id', $guestId);
+        }
+        $query->delete();
+    }
 }

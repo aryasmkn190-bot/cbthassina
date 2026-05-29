@@ -36,7 +36,9 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'role'       => \App\Filters\RoleFilter::class, // ini tambahan
         'dbcheck'  => \App\Filters\DatabaseCheckFilter::class, // ← Tambahkan ini
-        'cors' => \App\Filters\CorsFilter::class,
+        'cors_custom' => \App\Filters\CorsFilter::class,
+        'session_check' => \App\Filters\SessionCheckFilter::class,
+        'rate_limit'    => \App\Filters\RateLimitFilter::class,
     ];
 
     /**
@@ -78,7 +80,11 @@ class Filters extends BaseFilters
                 'install/*',
                 'api/*', // Tambahkan ini jika kamu punya route API yang tidak perlu dicek
             ]],
-            'cors', // Tambahkan ini
+            'cors_custom', // Tambahkan ini
+            'rate_limit' => ['except' => [
+                'install',
+                'install/*',
+            ]],
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
@@ -113,5 +119,13 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'session_check' => [
+            'before' => [
+                'panel/*',
+                'peserta/*',
+                'share/*',
+            ]
+        ],
+    ];
 }

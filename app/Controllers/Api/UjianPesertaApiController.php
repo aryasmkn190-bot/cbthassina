@@ -264,7 +264,7 @@ class UjianPesertaApiController extends ResourceController
         }
 
         // 🔹 Ambil soal & opsi sesuai urutan database (tanpa tertukar)
-        $soal = $this->soalModel->getSoalByUrutanFinal($soalIds, $opsiUrutan);
+        $soal = $this->soalModel->getSoalByUrutanCached($validasi['ujian']['bank_soal_id'], $soalIds, $opsiUrutan);
 
         // 🔹 Hilangkan kunci jawaban dan hitung max_select untuk MPG
         foreach ($soal as &$s) {
@@ -479,11 +479,7 @@ class UjianPesertaApiController extends ResourceController
             return $this->failUnauthorized($peserta['message']);
         }
 
-        $rows = $this->jawabanModel
-            ->select('id, jawaban, soal_id')
-            ->where('ujian_id', $ujianId)
-            ->where('peserta_id', $peserta['id'])
-            ->findAll();
+        $rows = $this->jawabanModel->getJawabanCached($ujianId, $peserta['id']);
 
         $data = [];
         foreach ($rows as $row) {

@@ -258,7 +258,7 @@ class UjianPesertaController extends BaseController
             ]);
         }
 
-        $soal = $this->soalModel->getSoalByUrutanFinal($soalIds, $opsiUrutan);
+        $soal = $this->soalModel->getSoalByUrutanCached($validasi['ujian']['bank_soal_id'], $soalIds, $opsiUrutan);
 
         // Hilangkan kunci jawaban & hitung max_select untuk MPG
         foreach ($soal as &$s) {
@@ -428,10 +428,7 @@ class UjianPesertaController extends BaseController
     {
         $pesertaId = session('peserta')['id'];
 
-        $jawabanModel = new JawabanModel();
-        $rows = $jawabanModel->where('ujian_id', $ujianId)
-            ->where('peserta_id', $pesertaId)
-            ->findAll();
+        $rows = $this->jawabanModel->getJawabanCached($ujianId, $pesertaId);
 
         $data = [];
 
@@ -471,23 +468,15 @@ class UjianPesertaController extends BaseController
             return $this->fail('Data tidak lengkap atau salah format');
         }
 
+        $validJawaban = [];
         foreach ($jawabanInput as $soalId => $jawaban) {
-            // Pastikan jawaban selalu dalam bentuk JSON object
-            if (!is_array($jawaban)) {
-                continue; // skip jika tidak valid
+            if (is_array($jawaban)) {
+                $validJawaban[$soalId] = $jawaban;
             }
+        }
 
-            $data = [
-                'id' => Uuid::uuid4()->toString(),
-                'ujian_id' => $ujianId,
-                'peserta_id' => $peserta['id'],
-                'soal_id' => $soalId,
-                'jawaban' => json_encode($jawaban, JSON_UNESCAPED_UNICODE),
-                'skor' => 0, // skor awal 0, dinilai nanti
-            ];
-
-            // Gunakan save atau replace tergantung strategi penyimpanan
-            $this->jawabanModel->saveJawaban($data);
+        if (!empty($validJawaban)) {
+            $this->jawabanModel->saveJawabanCached($ujianId, $peserta['id'], $validJawaban);
         }
 
         return $this->response->setJSON([
@@ -599,12 +588,8 @@ class UjianPesertaController extends BaseController
             ]);
         }
 
-        // 4️⃣ Ambil semua jawaban peserta (ringan)
-        $jawabanPesertaList = $this->jawabanModel
-            ->select('soal_id, jawaban')
-            ->where('ujian_id', $ujianId)
-            ->where('peserta_id', $pesertaId)
-            ->findAll();
+        // 4️⃣ Ambil semua jawaban peserta (ringan) dari Redis
+        $jawabanPesertaList = array_values($this->jawabanModel->getJawabanCached($ujianId, $pesertaId));
 
         // 5️⃣ Jalankan koreksi otomatis
         $koreksiService = new \App\Libraries\KoreksiService();
@@ -635,10 +620,7 @@ class UjianPesertaController extends BaseController
 
         // 8️⃣ Hapus jawaban hanya jika update berhasil
         if ($updateSuccess) {
-            $this->jawabanModel
-                ->where('ujian_id', $ujianId)
-                ->where('peserta_id', $pesertaId)
-                ->delete();
+            $this->jawabanModel->deleteJawabanCached($ujianId, $pesertaId);
         } else {
             return $this->response->setJSON([
                 'status' => false,

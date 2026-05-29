@@ -121,6 +121,7 @@ class SettingsController extends BaseController
         $exec = $this->Settings_model->settings_update(['id' => $id], $data);
 
         if ($exec) {
+            service('cache')->delete('app_setting');
             return $this->response->setJSON(['success' => true, 'message' => 'User update successfully']);
         } else {
             //return $this->response->setJSON($error);

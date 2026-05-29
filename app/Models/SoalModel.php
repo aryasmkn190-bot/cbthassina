@@ -24,6 +24,101 @@ class SoalModel extends Model
     ];
     protected $useTimestamps = false;
 
+    protected $afterInsert   = ['clearCacheOnMutation'];
+    protected $afterUpdate   = ['clearCacheOnMutation'];
+    protected $beforeDelete  = ['clearCacheOnDelete'];
+
+    protected function clearCacheOnMutation(array $data)
+    {
+        $bankSoalIds = [];
+        if (isset($data['data']['bank_soal_id'])) {
+            $bankSoalIds[] = $data['data']['bank_soal_id'];
+        }
+        if (isset($data['id'])) {
+            $ids = is_array($data['id']) ? $data['id'] : [$data['id']];
+            if (!empty($ids)) {
+                $rows = $this->db->table($this->table)->select('bank_soal_id')->whereIn('id', $ids)->get()->getResultArray();
+                foreach ($rows as $row) {
+                    $bankSoalIds[] = $row['bank_soal_id'];
+                }
+            }
+        }
+        $bankSoalIds = array_unique(array_filter($bankSoalIds));
+        $cache = service('cache');
+        foreach ($bankSoalIds as $bsId) {
+            $cache->delete("banksoal:questions:{$bsId}");
+        }
+        return $data;
+    }
+
+    protected function clearCacheOnDelete(array $data)
+    {
+        $bankSoalIds = [];
+        if (isset($data['id'])) {
+            $ids = is_array($data['id']) ? $data['id'] : [$data['id']];
+            if (!empty($ids)) {
+                $rows = $this->db->table($this->table)->select('bank_soal_id')->whereIn('id', $ids)->get()->getResultArray();
+                foreach ($rows as $row) {
+                    $bankSoalIds[] = $row['bank_soal_id'];
+                }
+            }
+        }
+        $bankSoalIds = array_unique(array_filter($bankSoalIds));
+        $cache = service('cache');
+        foreach ($bankSoalIds as $bsId) {
+            $cache->delete("banksoal:questions:{$bsId}");
+        }
+        return $data;
+    }
+
+    public function getSoalByUrutanCached(string $bankSoalId, array $soalIds, array $urutanOpsi)
+    {
+        if (empty($soalIds)) return [];
+
+        $cache = service('cache');
+        $cacheKey = "banksoal:questions:{$bankSoalId}";
+        $cachedPool = $cache->get($cacheKey);
+
+        if ($cachedPool === null) {
+            $cachedPool = $this->getSoalWithOpsi($bankSoalId);
+            // Cache for 2 hours (7200 seconds)
+            $cache->save($cacheKey, $cachedPool, 7200);
+        }
+
+        // Map the cached pool by soal ID for easy lookup
+        $poolMap = [];
+        foreach ($cachedPool as $soal) {
+            $poolMap[$soal['id']] = $soal;
+        }
+
+        // Reconstruct the ordered questions and options
+        $result = [];
+        foreach ($soalIds as $soalId) {
+            if (isset($poolMap[$soalId])) {
+                $soal = $poolMap[$soalId];
+                
+                // Sort/filter options based on $urutanOpsi
+                $orderedOpsi = [];
+                if (isset($urutanOpsi[$soalId])) {
+                    $opsiMap = [];
+                    foreach ($soal['opsi'] as $opsi) {
+                        $opsiMap[$opsi['id']] = $opsi;
+                    }
+                    foreach ($urutanOpsi[$soalId] as $opsiId) {
+                        if (isset($opsiMap[$opsiId])) {
+                            $orderedOpsi[] = $opsiMap[$opsiId];
+                        }
+                    }
+                }
+                
+                $soal['opsi'] = $orderedOpsi;
+                $result[] = $soal;
+            }
+        }
+
+        return $result;
+    }
+
     // Optional: jika ingin menambahkan relasi ke soal_opsi
     public function withOpsi($soalId)
     {
