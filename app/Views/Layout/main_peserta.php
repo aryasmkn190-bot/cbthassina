@@ -257,12 +257,12 @@
         <header class="header navbar navbar-expand-sm expand-header">
             <ul class="navbar-item theme-brand flex-row text-center">
                 <li class="nav-item theme-logo">
-                    <a href="javascript:void(0)">
+                    <a href="<?= base_url('peserta/home') ?>">
                         <img src="<?= base_url('assets/img/') . $setting->logo ?>" class="navbar-logo" alt="logo">
                     </a>
                 </li>
                 <li class="nav-item theme-text">
-                    <a href="javascript:void(0)" class="nav-link"> CANDY EXAM </a>
+                    <a href="<?= base_url('peserta/home') ?>" class="nav-link"> CANDY EXAM </a>
                 </li>
             </ul>
             <ul class="navbar-item flex-row ms-lg-auto ms-0 action-area">

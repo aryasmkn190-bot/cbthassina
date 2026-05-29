@@ -52,6 +52,7 @@ $routes->group('peserta', ['filter' => 'role:peserta'], function ($routes) {
 $routes->group('siswa', ['filter' => 'role:peserta'], function ($routes) {
     $routes->get('profil', 'ProfilSiswaController::index');
     $routes->post('profil/update', 'ProfilSiswaController::update');
+    $routes->get('ujian', 'UjianPesertaController::ujianPage');
 
     // Academic Standalone Pages
     $routes->get('jadwal', 'AkademikPesertaController::jadwalView');

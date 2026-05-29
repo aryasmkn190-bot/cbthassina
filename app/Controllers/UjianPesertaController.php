@@ -977,4 +977,41 @@ class UjianPesertaController extends BaseController
             'peserta' => $peserta
         ]);
     }
+
+    public function ujianPage()
+    {
+        $setting = $this->appSetting();
+        $pesertaData = [
+            'nama'  => '',
+            'nisn'  => '',
+            'kelas' => ''
+        ];
+
+        $pesertaSession = session('peserta');
+        $pesertaId = $pesertaSession['id'] ?? null;
+
+        if ($pesertaId) {
+            $pesertaModel = new \App\Models\PesertaModel();
+            $peserta = $pesertaModel
+                ->select('peserta.nama, peserta.nisn, kelas.nama as kelas')
+                ->join('kelas', 'kelas.id = peserta.kelas_id', 'left')
+                ->find($pesertaId);
+
+            if ($peserta) {
+                $pesertaData = [
+                    'nama'  => $peserta['nama'] ?? '',
+                    'nisn'  => $peserta['nisn'] ?? '',
+                    'kelas' => $peserta['kelas'] ?? '',
+                ];
+            }
+        }
+
+        $data = [
+            'setting' => $setting,
+            'title'   => 'Ujian Online',
+            'peserta' => $pesertaData
+        ];
+
+        return view('Siswa/ujian', $data);
+    }
 }

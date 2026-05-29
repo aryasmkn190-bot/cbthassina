@@ -364,12 +364,12 @@
                 <div class="features-section mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">Layanan Akademik</h5>
-                        <span class="text-primary small fw-bold" style="cursor: pointer;" onclick="scrollToExams()">Lihat Ujian</span>
+                        <a href="<?= base_url('siswa/ujian') ?>" class="text-primary small fw-bold text-decoration-none">Buka Ujian</a>
                     </div>
                     
                     <div class="features-grid">
                         <!-- 1. Ujian Online -->
-                        <a href="javascript:void(0)" class="feature-item hover-scale" onclick="scrollToExams()">
+                        <a href="<?= base_url('siswa/ujian') ?>" class="feature-item hover-scale">
                             <div class="feature-icon-wrapper fi-blue">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                             </div>
@@ -450,39 +450,50 @@
                     </div>
                 </div>
 
-                <!-- 📝 Exam List Section -->
-                <div id="section-ujian-core" class="pt-3">
-                    <div class="section-header d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-dark mb-0">Daftar Ujian Aktif</h5>
-                        <div class="d-md-none text-muted small" id="datetime-mobile">
-                            <span id="datetime-text-mobile" style="font-size: 0.72rem; font-weight: 700;"></span>
-                        </div>
+                <!-- 📢 Informasi & Pengumuman Sekolah Section -->
+                <div class="pt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0"><i data-feather="bell" class="text-primary me-2" style="width: 20px; height: 20px;"></i>Informasi & Pengumuman</h5>
+                        <a href="<?= base_url('siswa/info') ?>" class="text-primary small fw-bold text-decoration-none">Semua Info</a>
                     </div>
 
-                    <!-- Search, Sort & Filters -->
-                    <div class="d-flex align-items-center mb-4 gap-2 flex-wrap">
-                        <div class="flex-grow-1 position-relative">
-                            <input type="text" id="searchUjian" class="form-control shadow-sm" placeholder="Cari ujian...">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="position-absolute" style="top:50%; left:18px; transform:translateY(-50%); color:#94a3b8;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <div class="row">
+                        <!-- Card 1 -->
+                        <div class="col-12 mb-3">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white" style="border-left: 5px solid #4f46e5 !important; transition: transform 0.2s;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-primary small fw-bold">26 Mei 2026</span>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill py-1 px-2.5" style="font-size: 0.65rem; background: rgba(79, 70, 229, 0.08); color: #4f46e5 !important;">PENTING</span>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1" style="font-size: 0.92rem;">Pengumuman Libur Hari Raya Waisak</h6>
+                                <p class="text-muted small mb-0">Sehubungan dengan peringatan Hari Raya Waisak, kegiatan belajar mengajar ditiadakan pada hari Kamis, tanggal 28 Mei 2026. Siswa kembali masuk sekolah seperti biasa pada hari Jumat, 29 Mei 2026.</p>
+                            </div>
                         </div>
-                        <div class="d-flex gap-2">
-                            <select id="sortTanggal" class="form-select shadow-sm pe-4">
-                                <option value="desc">Terbaru</option>
-                                <option value="asc">Terlama</option>
-                            </select>
-                            <select id="filterHariIni" class="form-select shadow-sm pe-4">
-                                <option value="all">Semua</option>
-                                <option value="today">Hari Ini</option>
-                            </select>
+
+                        <!-- Card 2 -->
+                        <div class="col-12 mb-3">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white" style="border-left: 5px solid #8b5cf6 !important; transition: transform 0.2s;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-purple small fw-bold" style="color: #8b5cf6;">20 Mei 2026</span>
+                                    <span class="badge bg-purple-subtle text-purple rounded-pill py-1 px-2.5" style="font-size: 0.65rem; background: rgba(139, 92, 246, 0.08); color: #8b5cf6 !important;">AKADEMIK</span>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1" style="font-size: 0.92rem;">Jadwal Ulang Ujian Susulan Praktek Olahraga</h6>
+                                <p class="text-muted small mb-0">Ujian susulan praktek lari 12 menit bagi siswa yang berhalangan sakit pada jadwal utama akan dilaksanakan hari Kamis di stadion utama sekolah pukul 14:00 WIB. Harap hadir dengan pakaian olahraga lengkap.</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="col-12 mb-3">
+                            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white" style="border-left: 5px solid #10b981 !important; transition: transform 0.2s;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-success small fw-bold" style="color: #10b981;">15 Mei 2026</span>
+                                    <span class="badge bg-success-subtle text-success rounded-pill py-1 px-2.5" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.08); color: #059669 !important;">KEGIATAN</span>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1" style="font-size: 0.92rem;">Vaksinasi Booster Gratis Tahap-2</h6>
+                                <p class="text-muted small mb-0">Bagi siswa yang ingin mendaftar vaksinasi booster gratis kerjasama dengan Puskesmas, silakan mengumpulkan fotokopi KK ke ruang UKS maksimal hari Jumat ini pukul 11:30 WIB.</p>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Target Grid for Exam Cards -->
-                    <div class="row" id="ujian-list"></div>
-
-                    <nav>
-                        <ul class="pagination mt-3" id="pagination"></ul>
-                    </nav>
                 </div>
 
             </div>
@@ -597,239 +608,22 @@
         
         const desktopClock = document.getElementById('datetime-text');
         if (desktopClock) desktopClock.innerText = localeString;
-        
-        const mobileClock = document.getElementById('datetime-text-mobile');
-        if (mobileClock) mobileClock.innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' WIB';
     }
     
     updateDateTime();
     setInterval(updateDateTime, 1000);
 
-    // Scroll helper methods
-    function scrollToExams() {
-        $('html, body').animate({
-            scrollTop: $("#section-ujian-core").offset().top - 20
-        }, 300);
-    }
-
-    function scrollToTop() {
-        $('html, body').animate({
-            scrollTop: 0
-        }, 300);
-    }
-
-    // Core variables
-    let ujianData = [];
-    let currentPage = 1;
-    const perPage = 6;
-
-    // Render active exam cards
-    function renderUjian() {
-        const container = $("#ujian-list").empty();
-        const search = $("#searchUjian").val().toLowerCase();
-        const sort = $("#sortTanggal").val();
-        const filter = $("#filterHariIni").val();
-        const today = new Date().toISOString().split('T')[0];
-
-        let filtered = ujianData.filter(u =>
-            u.nama_bank_soal.toLowerCase().includes(search) ||
-            u.kode_ujian.toLowerCase().includes(search)
-        );
-
-        if (filter === "today") filtered = filtered.filter(u => u.waktu_mulai.startsWith(today));
-        filtered.sort((a, b) => sort === "asc" ? new Date(a.waktu_mulai) - new Date(b.waktu_mulai) : new Date(b.waktu_mulai) - new Date(a.waktu_mulai));
-
-        // Sync exam statistics across student card
-        const pendingExams = filtered.filter(u => u.status_peserta !== 'selesai').length;
-        $(".font-ujian-count").text(pendingExams);
-
-        const totalPages = Math.ceil(filtered.length / perPage);
-        if (currentPage > totalPages) currentPage = totalPages || 1;
-        const start = (currentPage - 1) * perPage;
-        const end = start + perPage;
-        const paginated = filtered.slice(start, end);
-
-        if (paginated.length === 0) {
-            container.html('<div class="col-12 text-center py-4"><p class="text-muted small">Tidak ada ujian aktif saat ini.</p></div>');
-            $("#pagination").empty();
-            return;
-        }
-
-        paginated.forEach(u => {
-            const mulai = new Date(u.waktu_mulai);
-            const selesai = new Date(u.waktu_selesai);
-
-            let statusBadge = '', buttonHtml = '';
-            if (u.status_peserta === 'selesai') {
-                statusBadge = '<span class="badge bg-success-subtle text-success rounded-pill fw-bold" style="background-color: #e0f2fe; color: #0284c7 !important;">Selesai</span>';
-                buttonHtml = u.tampil_nilai == 1 ?
-                    `<button class="btn btn-success btn-sm w-100 lihat-hasil-btn shadow-sm"><i data-feather="eye" class="me-1" style="width: 14px; height: 14px;"></i>Lihat Hasil Ujian</button>` :
-                    `<button class="btn btn-outline-success btn-sm w-100" disabled>Ujian Selesai</button>`;
-            } else if (u.status_peserta === 'sedang_mengerjakan') {
-                statusBadge = '<span class="badge bg-primary-subtle text-primary rounded-pill fw-bold" style="background-color: #eff6ff; color: #3b82f6 !important;">Dikerjakan</span>';
-                buttonHtml = `<button class="btn btn-warning text-white btn-sm w-100 melanjutkan-ujian-btn shadow-sm" data-id="${u.id}" data-pakai-token="${u.pakai_token}"><i data-feather="play-circle" class="me-1" style="width: 14px; height: 14px;"></i>Lanjutkan Ujian</button>`;
-            } else if (u.status_waktu === 'belum_mulai') {
-                statusBadge = '<span class="badge bg-warning-subtle text-warning rounded-pill fw-bold" style="background-color: #fffbeb; color: #d97706 !important;">Belum Mulai</span>';
-                buttonHtml = '<button class="btn btn-outline-secondary btn-sm w-100" disabled>Belum Mulai</button>';
-            } else if (u.status_waktu === 'dibuka') {
-                statusBadge = '<span class="badge bg-success-subtle text-success rounded-pill fw-bold" style="background-color: #f0fdf4; color: #16a34a !important;">Dibuka</span>';
-                buttonHtml = `<button class="btn btn-primary btn-sm w-100 mulai-ujian-btn shadow-sm" data-id="${u.id}" data-pakai-token="${u.pakai_token}"><i data-feather="play" class="me-1" style="width: 14px; height: 14px;"></i>Mulai Mengerjakan</button>`;
-            } else if (u.status_waktu === 'terlambat') {
-                statusBadge = '<span class="badge bg-danger-subtle text-danger rounded-pill fw-bold" style="background-color: #fef2f2; color: #dc2626 !important;">Terlambat</span>';
-                buttonHtml = '<button class="btn btn-outline-danger btn-sm w-100" disabled>Waktu Habis</button>';
-            }
-
-            container.append(`
-                <div class="col-xl-4 col-lg-6 col-md-6 col-sm-6 mb-3">
-                    <div class="card-ujian h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 75%; font-size: 0.88rem;">${u.nama_ujian}</h6>
-                                <span class="text-muted small fw-semibold">(${u.kode_ujian})</span>
-                            </div>
-
-                            <div class="text-muted small mb-3" style="font-size: 0.72rem;">
-                                <div class="mb-1"><i data-feather="calendar" class="me-1" style="width: 11px; height: 11px;"></i> Mulai: ${mulai.toLocaleDateString('id-ID')} - ${mulai.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} WIB</div>
-                                <div><i data-feather="clock" class="me-1" style="width: 11px; height: 11px;"></i> Selesai: ${selesai.toLocaleDateString('id-ID')} - ${selesai.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} WIB</div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge bg-info-subtle text-info rounded-pill fw-bold" style="background-color: #ecfeff; color:#0891b2 !important; font-size: 0.72rem;">${u.durasi_ujian} Menit</span>
-                                ${statusBadge}
-                            </div>
-                            ${buttonHtml}
-                        </div>
-                    </div>
-                </div>
-            `);
-        });
-
-        let paginationHtml = '';
-        for (let i = 1; i <= totalPages; i++) {
-            paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" data-page="${i}">${i}</a></li>`;
-        }
-        $("#pagination").html(paginationHtml);
-        feather.replace();
-    }
-
     $(document).ready(function() {
-        // Load exam data
+        // Fetch active exams count to dynamically update the statistic card
         $.ajax({
             url: "<?= base_url('peserta/ujian/getall') ?>",
             method: "GET",
             dataType: "json",
             success: function(res) {
                 if (res.status) {
-                    ujianData = res.data;
-                    renderUjian();
+                    const pendingExams = res.data.filter(u => u.status_peserta !== 'selesai').length;
+                    $(".font-ujian-count").text(pendingExams);
                 }
-            }
-        });
-
-        // Filter event listeners
-        $("#searchUjian, #sortTanggal, #filterHariIni").on("input change", function() {
-            currentPage = 1;
-            renderUjian();
-        });
-        
-        $(document).on("click", "#pagination .page-link", function() {
-            currentPage = parseInt($(this).data("page"));
-            renderUjian();
-        });
-
-        // Action routes
-        $(document).on('click', '.lihat-hasil-btn', function() {
-            window.location.href = `<?= base_url('peserta/ujian/hasil/') ?>${$(this).data('id')}`;
-        });
-
-        $(document).on('click', '.mulai-ujian-btn', function() {
-            const id = $(this).data('id');
-            const pakaiToken = $(this).data('pakai-token') == 1;
-            if (pakaiToken) {
-                Swal.fire({
-                    title: 'Masukkan Token Ujian',
-                    input: 'text',
-                    inputPlaceholder: 'Token Ujian',
-                    inputAttributes: {
-                        autocapitalize: 'off'
-                    },
-                    showCancelButton: true,
-                    confirmButtonText: 'Mulai',
-                    showLoaderOnConfirm: true,
-                    customClass: {
-                        popup: 'rounded-4'
-                    },
-                    preConfirm: (token) => {
-                        if (!token || token.trim() === '') {
-                            Swal.showValidationMessage('Token tidak boleh kosong.');
-                            return false;
-                        }
-                        return $.ajax({
-                            url: `<?= base_url('peserta/ujian/cektoken') ?>`,
-                            method: 'POST',
-                            data: {
-                                ujian_id: id,
-                                token: token
-                            },
-                            dataType: 'json'
-                        }).then(res => {
-                            if (!res.status) throw new Error(res.message || 'Token salah.');
-                            return true;
-                        }).catch(err => {
-                            Swal.showValidationMessage(err.message);
-                        });
-                    }
-                }).then(result => {
-                    if (result.isConfirmed) window.location.href = `<?= base_url('peserta/ujian/mulai/') ?>${id}`;
-                });
-            } else window.location.href = `<?= base_url('peserta/ujian/mulai/') ?>${id}`;
-        });
-
-        $(document).on('click', '.lanjutkan-ujian-btn', function() {
-            const id = $(this).data('id');
-            const pakaiToken = $(this).data('pakai-token') == 1;
-
-            if (pakaiToken) {
-                Swal.fire({
-                    title: 'Masukkan Token Ujian',
-                    input: 'text',
-                    inputPlaceholder: 'Token Ujian',
-                    inputAttributes: {
-                        autocapitalize: 'off'
-                    },
-                    showCancelButton: true,
-                    confirmButtonText: 'Lanjutkan',
-                    showLoaderOnConfirm: true,
-                    customClass: {
-                        popup: 'rounded-4'
-                    },
-                    preConfirm: (token) => {
-                        if (!token || token.trim() === '') {
-                            Swal.showValidationMessage('Token tidak boleh kosong.');
-                            return false;
-                        }
-                        return $.ajax({
-                            url: `<?= base_url('peserta/ujian/cektoken') ?>`,
-                            method: 'POST',
-                            data: {
-                                ujian_id: id,
-                                token: token
-                            },
-                            dataType: 'json'
-                        }).then(res => {
-                            if (!res.status) throw new Error(res.message || 'Token salah.');
-                            return true;
-                        }).catch(err => {
-                            Swal.showValidationMessage(err.message);
-                        });
-                    }
-                }).then(result => {
-                    if (result.isConfirmed) window.location.href = `<?= base_url('peserta/ujian/lanjut/') ?>${id}`;
-                });
-            } else {
-                window.location.href = `<?= base_url('peserta/ujian/lanjut/') ?>${id}`;
             }
         });
     });
