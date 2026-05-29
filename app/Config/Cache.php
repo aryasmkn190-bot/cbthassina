@@ -118,7 +118,7 @@ class Cache extends BaseConfig
         'host'     => '127.0.0.1',
         'password' => null,
         'port'     => 6379,
-        'timeout'  => 0,
+        'timeout'  => 5,
         'database' => 0,
     ];
 
@@ -163,6 +163,11 @@ class Cache extends BaseConfig
     public function __construct()
     {
         parent::__construct();
+
+        // Prevent Predis connection failure by ensuring timeout is not 0
+        if (($this->redis['timeout'] ?? 0) === 0) {
+            $this->redis['timeout'] = 5;
+        }
 
         // Auto-detect Redis config from session.savePath if not explicitly set
         $envSessionDriver = env('session.driver');
