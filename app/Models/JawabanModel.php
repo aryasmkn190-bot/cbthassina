@@ -67,32 +67,69 @@ class JawabanModel extends Model
     public function saveJawabanCached(string $ujianId, ?string $pesertaId, array $jawabanInput, ?string $guestId = null)
     {
         $cache = service('cache');
-        $id = $pesertaId ?: $guestId;
-        $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+        $cacheClass = get_class($cache);
+        $isDummy = (strpos($cacheClass, 'DummyHandler') !== false);
+        $cacheSaved = false;
 
-        $answers = $cache->get($cacheKey);
-        if ($answers === null) {
-            $answers = $this->getJawabanCached($ujianId, $pesertaId, $guestId);
+        if (!$isDummy) {
+            try {
+                $id = $pesertaId ?: $guestId;
+                $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+
+                $answers = $cache->get($cacheKey);
+                if ($answers === null) {
+                    $answers = $this->getJawabanCached($ujianId, $pesertaId, $guestId);
+                }
+
+                foreach ($jawabanInput as $soalId => $jawaban) {
+                    $answers[$soalId] = [
+                        'soal_id' => $soalId,
+                        'jawaban' => json_encode($jawaban, JSON_UNESCAPED_UNICODE)
+                    ];
+                }
+
+                $cacheSaved = $cache->save($cacheKey, $answers, 14400);
+            } catch (\Throwable $e) {
+                log_message('error', 'Redis cache save failed, falling back to MySQL: ' . $e->getMessage());
+                $cacheSaved = false;
+            }
         }
 
-        foreach ($jawabanInput as $soalId => $jawaban) {
-            $answers[$soalId] = [
-                'soal_id' => $soalId,
-                'jawaban' => json_encode($jawaban, JSON_UNESCAPED_UNICODE)
-            ];
+        // Fallback: Write directly to the MySQL database if cache fails or is dummy
+        if (!$cacheSaved) {
+            foreach ($jawabanInput as $soalId => $jawaban) {
+                $data = [
+                    'ujian_id' => $ujianId,
+                    'peserta_id' => $pesertaId,
+                    'guest_id' => $guestId,
+                    'soal_id' => $soalId,
+                    'jawaban' => json_encode($jawaban, JSON_UNESCAPED_UNICODE),
+                    'skor' => 0
+                ];
+                $this->saveJawaban($data);
+            }
         }
-
-        $cache->save($cacheKey, $answers, 14400);
     }
 
     public function getJawabanCached(string $ujianId, ?string $pesertaId, ?string $guestId = null): array
     {
         $cache = service('cache');
-        $id = $pesertaId ?: $guestId;
-        $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+        $cacheClass = get_class($cache);
+        $isDummy = (strpos($cacheClass, 'DummyHandler') !== false);
+        $answers = null;
 
-        $answers = $cache->get($cacheKey);
+        if (!$isDummy) {
+            try {
+                $id = $pesertaId ?: $guestId;
+                $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+                $answers = $cache->get($cacheKey);
+            } catch (\Throwable $e) {
+                log_message('error', 'Redis cache get failed, falling back to MySQL: ' . $e->getMessage());
+            }
+        }
+
         if ($answers === null) {
+            // Load directly from MySQL
             $query = $this->where('ujian_id', $ujianId);
             if ($pesertaId) {
                 $query = $query->where('peserta_id', $pesertaId);
@@ -109,7 +146,16 @@ class JawabanModel extends Model
                 ];
             }
 
-            $cache->save($cacheKey, $answers, 14400);
+            // Save back to cache if cache is working
+            if (!$isDummy && !empty($answers)) {
+                try {
+                    $id = $pesertaId ?: $guestId;
+                    $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+                    $cache->save($cacheKey, $answers, 14400);
+                } catch (\Throwable $e) {
+                    // Ignore cache write error
+                }
+            }
         }
 
         return $answers;
@@ -118,11 +164,20 @@ class JawabanModel extends Model
     public function deleteJawabanCached(string $ujianId, ?string $pesertaId, ?string $guestId = null)
     {
         $cache = service('cache');
-        $id = $pesertaId ?: $guestId;
-        $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+        $cacheClass = get_class($cache);
+        $isDummy = (strpos($cacheClass, 'DummyHandler') !== false);
 
-        $cache->delete($cacheKey);
+        if (!$isDummy) {
+            try {
+                $id = $pesertaId ?: $guestId;
+                $cacheKey = "ujian:jawaban:{$ujianId}:{$id}";
+                $cache->delete($cacheKey);
+            } catch (\Throwable $e) {
+                log_message('error', 'Redis cache delete failed: ' . $e->getMessage());
+            }
+        }
 
+        // Always clean up from MySQL
         $query = $this->where('ujian_id', $ujianId);
         if ($pesertaId) {
             $query = $query->where('peserta_id', $pesertaId);
