@@ -103,6 +103,9 @@ class AuthPesertaController extends BaseController
             'role'     => 'peserta',
         ]);
 
+        // Regenerate session ID for security
+        session()->regenerate();
+
         // Save session ID to Redis for concurrent session check
         try {
             $sessionID = session_id();

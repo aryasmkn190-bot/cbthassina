@@ -51,6 +51,9 @@ class AuthController extends BaseController
             'role'     => $user['roles'],
         ]);
 
+        // Regenerate session ID for security
+        session()->regenerate();
+
         // Save session ID to Redis for concurrent session check
         try {
             $sessionID = session_id();
