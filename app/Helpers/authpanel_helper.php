@@ -45,14 +45,22 @@ if (!function_exists('user_role')) {
 if (!function_exists('has_role')) {
     function has_role(string $role)
     {
-        return user_role() === $role;
+        $userRoles = explode(',', user_role() ?? '');
+        return in_array($role, array_map('trim', $userRoles), true);
     }
 }
 
 if (!function_exists('has_any_role')) {
     function has_any_role(array $roles)
     {
-        return in_array(user_role(), $roles, true);
+        $userRoles = explode(',', user_role() ?? '');
+        $userRoles = array_map('trim', $userRoles);
+        foreach ($roles as $r) {
+            if (in_array($r, $userRoles, true)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

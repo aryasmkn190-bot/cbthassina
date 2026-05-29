@@ -61,6 +61,15 @@
                         <option value="0">Tidak Aktif</option>
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label>Wali Kelas</label>
+                    <select name="wali_kelas_id" class="form-control form-control-sm">
+                        <option value="">-- Tanpa Wali Kelas --</option>
+                        <?php foreach ($waliKelas as $wali): ?>
+                            <option value="<?= $wali['id'] ?>"><?= esc($wali['full_name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
@@ -80,15 +89,22 @@
     let save_method;
 
     function renderKelasCard(kelas) {
+        const waliKelasText = kelas.wali_kelas_nama ? kelas.wali_kelas_nama : '<span class="text-muted italic small">-</span>';
         return `
     <div class="col-12 col-sm-6 col-md-3">
         <div class="card h-100 shadow-sm position-relative p-2">
 
             <div class="card-body d-flex flex-column">
-                <h6 class="card-title mb-2 text-truncate">${kelas.nama}</h6>
-                <span class="badge ${kelas.is_active == 1 ? 'bg-success' : 'bg-danger'} rounded-pill px-2 py-1 small">
-                    ${kelas.is_active == 1 ? 'Aktif' : 'Nonaktif'}
-                </span>
+                <h6 class="card-title mb-1 text-truncate">${kelas.nama}</h6>
+                <p class="text-muted small mb-2">Wali Kelas: <b class="text-dark">${waliKelasText}</b></p>
+                <div class="d-flex align-items-center justify-content-between mt-auto">
+                    <span class="badge ${kelas.is_active == 1 ? 'bg-success' : 'bg-danger'} rounded-pill px-2 py-1 small">
+                        ${kelas.is_active == 1 ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                    <button onclick="manageStudents('${kelas.id}', '${kelas.nama}')" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size: 0.72rem;">
+                        Kelola Siswa
+                    </button>
+                </div>
             </div>
 
            <!-- Tombol edit/hapus di pojok kanan atas -->
@@ -206,6 +222,7 @@
             $('[name="id"]').val(item.id);
             $('[name="nama"]').val(item.nama);
             $('[name="is_active"]').val(item.is_active);
+            $('[name="wali_kelas_id"]').val(item.wali_kelas_id || '');
             $('.modal-title').text('Edit Kelas');
             $('#modal_form').modal('show');
             save_method = 'edit';
@@ -239,5 +256,213 @@
 
     // Initial load
     $(document).ready(loadKelas);
+
+    // --- STUDENT MANAGEMENT LOGIC ---
+    let currentClassStudents = [];
+    let eligibleStudents = [];
+
+    window.manageStudents = function(kelasId, kelasNama) {
+        $('#active_kelas_id').val(kelasId);
+        $('#studentModalTitle').text(`Kelola Siswa - ${kelasNama}`);
+        $('#searchActiveStudents').val('');
+        $('#searchEligibleStudents').val('');
+        $('#selectAllEligible').prop('checked', false);
+        
+        // Switch to active students tab first
+        const tabEl = document.querySelector('#active-students-tab');
+        if (tabEl) {
+            const tab = new bootstrap.Tab(tabEl);
+            tab.show();
+        }
+        
+        loadClassStudents();
+        loadEligibleStudents();
+        $('#modal_students').modal('show');
+    }
+
+    function loadClassStudents() {
+        const kelasId = $('#active_kelas_id').val();
+        $('#activeStudentsList').html('<tr><td colspan="3" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>');
+        $.get(`<?= base_url('panel/kelas/students') ?>/${kelasId}`, function(res) {
+            if (res.status) {
+                currentClassStudents = res.data;
+                renderClassStudents();
+            }
+        });
+    }
+
+    function renderClassStudents() {
+        const q = $('#searchActiveStudents').val().toLowerCase();
+        const filtered = currentClassStudents.filter(s => s.nama.toLowerCase().includes(q) || s.nisn.includes(q));
+        
+        if (filtered.length === 0) {
+            $('#activeStudentsList').html('<tr><td colspan="3" class="text-center text-muted small py-3">Tidak ada siswa di kelas ini.</td></tr>');
+            return;
+        }
+        
+        let html = '';
+        filtered.forEach(s => {
+            html += `
+            <tr>
+                <td class="small fw-bold text-dark">${s.nama}</td>
+                <td class="small text-muted">${s.nisn}</td>
+                <td>
+                    <button type="button" onclick="removeStudentFromClass('${s.id}')" class="btn btn-xs btn-danger px-2 py-0" style="font-size:0.65rem;">
+                        Keluarkan
+                    </button>
+                </td>
+            </tr>`;
+        });
+        $('#activeStudentsList').html(html);
+    }
+
+    function loadEligibleStudents() {
+        $('#eligibleStudentsList').html('<tr><td colspan="4" class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>');
+        $.get(`<?= base_url('panel/kelas/eligible-students') ?>`, function(res) {
+            if (res.status) {
+                const currentClassId = $('#active_kelas_id').val();
+                eligibleStudents = res.data.filter(s => s.kelas_id !== currentClassId);
+                renderEligibleStudents();
+            }
+        });
+    }
+
+    function renderEligibleStudents() {
+        const q = $('#searchEligibleStudents').val().toLowerCase();
+        const filtered = eligibleStudents.filter(s => s.nama.toLowerCase().includes(q) || s.nisn.includes(q));
+        
+        if (filtered.length === 0) {
+            $('#eligibleStudentsList').html('<tr><td colspan="4" class="text-center text-muted small py-3">Tidak ada siswa yang cocok.</td></tr>');
+            return;
+        }
+        
+        let html = '';
+        filtered.forEach(s => {
+            const classText = s.kelas_nama ? `<span class="badge bg-light text-dark border small">${s.kelas_nama}</span>` : '<span class="text-muted small italic">Belum ada kelas</span>';
+            html += `
+            <tr>
+                <td><input type="checkbox" class="student-select-cb" value="${s.id}"></td>
+                <td class="small fw-bold text-dark">${s.nama}</td>
+                <td class="small text-muted">${s.nisn}</td>
+                <td>${classText}</td>
+            </tr>`;
+        });
+        $('#eligibleStudentsList').html(html);
+    }
+
+    $('#searchActiveStudents').on('input', renderClassStudents);
+    $('#searchEligibleStudents').on('input', renderEligibleStudents);
+
+    $('#selectAllEligible').on('change', function() {
+        $('.student-select-cb').prop('checked', this.checked);
+    });
+
+    window.removeStudentFromClass = function(pesertaId) {
+        Swal.fire({
+            title: 'Keluarkan siswa dari kelas?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Tidak'
+        }).then(result => {
+            if (result.isConfirmed) {
+                $.post('<?= base_url('panel/kelas/remove-student') ?>', { peserta_id: pesertaId }, function(res) {
+                    if (res.status) {
+                        loadClassStudents();
+                        loadEligibleStudents();
+                        Snackbar.show({ text: res.message, pos: 'top-center' });
+                    }
+                }, 'json');
+            }
+        });
+    }
+
+    window.submitAddStudents = function() {
+        const selectedIds = [];
+        $('.student-select-cb:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+        
+        if (selectedIds.length === 0) {
+            Swal.fire('Info', 'Pilih minimal satu siswa untuk ditambahkan.', 'info');
+            return;
+        }
+        
+        const kelasId = $('#active_kelas_id').val();
+        $.post('<?= base_url('panel/kelas/add-students') ?>', { kelas_id: kelasId, peserta_ids: selectedIds }, function(res) {
+            if (res.status) {
+                loadClassStudents();
+                loadEligibleStudents();
+                $('#selectAllEligible').prop('checked', false);
+                Snackbar.show({ text: res.message, pos: 'top-center' });
+            }
+        }, 'json');
+    }
 </script>
+
+<!-- Modal Kelola Siswa -->
+<div class="modal fade" id="modal_students" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="studentModalTitle">Kelola Siswa Kelas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="active_kelas_id">
+                <ul class="nav nav-tabs mb-3" id="studentTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="active-students-tab" data-bs-toggle="tab" data-bs-target="#active-students" type="button" role="tab">Siswa Aktif Kelas</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="add-students-tab" data-bs-toggle="tab" data-bs-target="#add-students" type="button" role="tab">Tambahkan Siswa</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="studentTabContent">
+                    <!-- Tab Siswa Aktif -->
+                    <div class="tab-pane fade show active" id="active-students" role="tabpanel">
+                        <div class="mb-2">
+                            <input type="text" id="searchActiveStudents" class="form-control form-control-sm" placeholder="Cari siswa di kelas ini...">
+                        </div>
+                        <div class="table-responsive" style="max-height: 350px;">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Nama</th>
+                                        <th>NISN</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activeStudentsList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Tab Tambahkan Siswa -->
+                    <div class="tab-pane fade" id="add-students" role="tabpanel">
+                        <div class="d-flex gap-2 mb-2">
+                            <input type="text" id="searchEligibleStudents" class="form-control form-control-sm" placeholder="Cari siswa untuk ditambahkan...">
+                            <button type="button" onclick="submitAddStudents()" class="btn btn-primary btn-sm px-3 flex-shrink-0">
+                                Tambahkan Terpilih
+                            </button>
+                        </div>
+                        <div class="table-responsive" style="max-height: 350px;">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th width="40"><input type="checkbox" id="selectAllEligible"></th>
+                                        <th>Nama</th>
+                                        <th>NISN</th>
+                                        <th>Kelas Saat Ini</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eligibleStudentsList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection(); ?>

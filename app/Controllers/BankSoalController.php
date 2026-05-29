@@ -23,8 +23,8 @@ class BankSoalController extends BaseController
 
         $userModel = new UserModel();
         if (has_role('admin')) {
-            $gurus = $userModel->where('roles', 'guru')->findAll();
-        } elseif (has_role('guru')) {
+            $gurus = $userModel->whereIn('roles', ['guru', 'wali_kelas'])->findAll();
+        } elseif (has_role('guru') || has_role('wali_kelas')) {
             $userId = user_id();
             $gurus = [$userModel->find($userId)];
         } else {
@@ -32,10 +32,12 @@ class BankSoalController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        $mapelModel = new \App\Models\MataPelajaranModel();
+        $mapels = $mapelModel->getActiveSorted();
         $data = [
             'title'      => 'Bank Soal',
             'gurus'      => $gurus,
-
+            'mapels'     => $mapels,
             'setting'    => $this->appSetting(),
         ];
 
@@ -77,11 +79,12 @@ class BankSoalController extends BaseController
     {
         if ($this->request->isAJAX()) {
             $rules = [
-                'kode'       => 'required|min_length[2]|max_length[50]|is_unique[bank_soal.kode]',
-                'nama'       => 'required|min_length[3]|max_length[255]',
-                'deskripsi'  => 'permit_empty',
-                'is_active'  => 'in_list[0,1]',
-                'created_by' => 'required|min_length[36]|max_length[36]',
+                'kode'              => 'required|min_length[2]|max_length[50]|is_unique[bank_soal.kode]',
+                'nama'              => 'required|min_length[3]|max_length[255]',
+                'deskripsi'         => 'permit_empty',
+                'mata_pelajaran_id' => 'required|min_length[36]|max_length[36]',
+                'is_active'         => 'in_list[0,1]',
+                'created_by'        => 'required|min_length[36]|max_length[36]',
             ];
 
             if (!$this->validate($rules)) {
@@ -92,14 +95,15 @@ class BankSoalController extends BaseController
             }
 
             $data = [
-                'id'         => Uuid::uuid4()->toString(),
-                'kode'       => $this->request->getPost('kode'),
-                'nama'       => $this->request->getPost('nama'),
-                'deskripsi'  => $this->request->getPost('deskripsi'),
-                'is_active'  => $this->request->getPost('is_active') ?? 1,
-                'is_public'  => $this->request->getPost('is_public') ?? 1,
-                'created_by' => $this->request->getPost('created_by'),
-                'created_at' => date('Y-m-d H:i:s'),
+                'id'                => Uuid::uuid4()->toString(),
+                'kode'              => $this->request->getPost('kode'),
+                'nama'              => $this->request->getPost('nama'),
+                'deskripsi'         => $this->request->getPost('deskripsi'),
+                'mata_pelajaran_id' => $this->request->getPost('mata_pelajaran_id'),
+                'is_active'         => $this->request->getPost('is_active') ?? 1,
+                'is_public'         => $this->request->getPost('is_public') ?? 1,
+                'created_by'        => $this->request->getPost('created_by'),
+                'created_at'        => date('Y-m-d H:i:s'),
             ];
 
             $this->bankSoalModel->insert($data);
@@ -117,10 +121,11 @@ class BankSoalController extends BaseController
     {
         if ($this->request->isAJAX()) {
             $rules = [
-                'kode'       => "required|min_length[2]|max_length[50]|is_unique[bank_soal.kode,id,{$id}]",
-                'nama'       => 'required|min_length[3]|max_length[255]',
-                'deskripsi'  => 'permit_empty',
-                'is_active'  => 'in_list[0,1]'
+                'kode'              => "required|min_length[2]|max_length[50]|is_unique[bank_soal.kode,id,{$id}]",
+                'nama'              => 'required|min_length[3]|max_length[255]',
+                'deskripsi'         => 'permit_empty',
+                'mata_pelajaran_id' => 'required|min_length[36]|max_length[36]',
+                'is_active'         => 'in_list[0,1]'
             ];
 
             if (!$this->validate($rules)) {
@@ -131,12 +136,13 @@ class BankSoalController extends BaseController
             }
 
             $data = [
-                'kode'       => $this->request->getPost('kode'),
-                'nama'       => $this->request->getPost('nama'),
-                'deskripsi'  => $this->request->getPost('deskripsi'),
-                'is_active'  => $this->request->getPost('is_active') ?? 1,
-                'is_public'  => $this->request->getPost('is_public') ?? 1,
-                'updated_at' => date('Y-m-d H:i:s'),
+                'kode'              => $this->request->getPost('kode'),
+                'nama'              => $this->request->getPost('nama'),
+                'deskripsi'         => $this->request->getPost('deskripsi'),
+                'mata_pelajaran_id' => $this->request->getPost('mata_pelajaran_id'),
+                'is_active'         => $this->request->getPost('is_active') ?? 1,
+                'is_public'         => $this->request->getPost('is_public') ?? 1,
+                'updated_at'        => date('Y-m-d H:i:s'),
             ];
 
             $this->bankSoalModel->update($id, $data);
@@ -248,15 +254,16 @@ class BankSoalController extends BaseController
 
         // 2. Insert Bank Soal Baru
         $newBankSoalData = [
-            'id'         => $newBankSoalId,
-            'kode'       => $newKode,
-            'nama'       => $original['nama'] . ' - COPY',
-            'deskripsi'  => $original['deskripsi'],
-            'is_active'  => $original['is_active'],
-            'is_public'  => $original['is_public'],
-            'created_by' => user_id(), // Pembuat diubah menjadi user yang sedang login
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
+            'id'                => $newBankSoalId,
+            'kode'              => $newKode,
+            'nama'              => $original['nama'] . ' - COPY',
+            'deskripsi'         => $original['deskripsi'],
+            'mata_pelajaran_id' => $original['mata_pelajaran_id'],
+            'is_active'         => $original['is_active'],
+            'is_public'         => $original['is_public'],
+            'created_by'        => user_id(), // Pembuat diubah menjadi user yang sedang login
+            'created_at'        => date('Y-m-d H:i:s'),
+            'updated_at'        => date('Y-m-d H:i:s'),
         ];
         $db->table('bank_soal')->insert($newBankSoalData);
 

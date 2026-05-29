@@ -68,8 +68,8 @@ class AnalisisButirController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        // Otorisasi: guru hanya bisa lihat bank soal miliknya
-        if (has_role('guru') && $bankSoal['created_by'] !== user_id()) {
+        // Otorisasi: guru/wali_kelas hanya bisa lihat bank soal miliknya
+        if (!has_role('admin') && $bankSoal['created_by'] !== user_id()) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
@@ -105,7 +105,7 @@ class AnalisisButirController extends BaseController
         $bankSoal = $this->bankSoalModel->find($ujian['bank_soal_id']);
 
         // Otorisasi
-        if (has_role('guru') && $bankSoal['created_by'] !== user_id()) {
+        if (!has_role('admin') && $bankSoal['created_by'] !== user_id()) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
@@ -152,7 +152,7 @@ class AnalisisButirController extends BaseController
         $bankSoal = $this->bankSoalModel->find($ujian['bank_soal_id']);
 
         // Otorisasi
-        if (has_role('guru') && $bankSoal['created_by'] !== user_id()) {
+        if (!has_role('admin') && $bankSoal['created_by'] !== user_id()) {
             return $this->response->setStatusCode(403)->setJSON([
                 'status' => false, 'message' => 'Akses ditolak.'
             ]);
@@ -406,7 +406,7 @@ class AnalisisButirController extends BaseController
         }
 
         $bankSoal = $this->bankSoalModel->find($ujian['bank_soal_id']);
-        if (has_role('guru') && $bankSoal['created_by'] !== user_id()) {
+        if (!has_role('admin') && $bankSoal['created_by'] !== user_id()) {
             return redirect()->back()->with('error', 'Akses ditolak.');
         }
 
@@ -815,7 +815,7 @@ class AnalisisButirController extends BaseController
         $bankSoal = $this->bankSoalModel->find($ujian['bank_soal_id']);
 
         // Otorisasi
-        if (has_role('guru') && $bankSoal['created_by'] !== user_id()) {
+        if (!has_role('admin') && $bankSoal['created_by'] !== user_id()) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 

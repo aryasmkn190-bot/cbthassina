@@ -39,6 +39,30 @@ $routes->group('peserta', ['filter' => 'role:peserta'], function ($routes) {
         $routes->get('get-jawaban/(:segment)', 'UjianPesertaController::getJawabanPeserta/$1'); // ambil semua soal
         $routes->get('get-ujian/(:segment)', 'UjianPesertaController::apiGetUjian/$1');
     });
+    $routes->group('akademik', function ($routes) {
+        $routes->get('get-jadwal', 'AkademikPesertaController::getJadwal');
+        $routes->get('get-tugas', 'AkademikPesertaController::getTugas');
+        $routes->post('submit-tugas', 'AkademikPesertaController::submitTugas');
+        $routes->post('scan-absen', 'AkademikPesertaController::scanAbsen');
+        $routes->get('get-rapor', 'AkademikPesertaController::getRapor');
+        $routes->get('get-keuangan', 'AkademikPesertaController::getKeuangan');
+    });
+});
+
+$routes->group('siswa', ['filter' => 'role:peserta'], function ($routes) {
+    $routes->get('profil', 'ProfilSiswaController::index');
+    $routes->post('profil/update', 'ProfilSiswaController::update');
+
+    // Academic Standalone Pages
+    $routes->get('jadwal', 'AkademikPesertaController::jadwalView');
+    $routes->get('tugas', 'AkademikPesertaController::tugasView');
+    $routes->get('materi', 'AkademikPesertaController::materiView');
+    $routes->get('absensi', 'AkademikPesertaController::absensiView');
+    $routes->get('rapor', 'AkademikPesertaController::raporView');
+    $routes->get('keuangan', 'AkademikPesertaController::keuanganView');
+    $routes->get('kesiswaan', 'AkademikPesertaController::kesiswaanView');
+    $routes->get('ekstra', 'AkademikPesertaController::ekstraView');
+    $routes->get('info', 'AkademikPesertaController::infoView');
 });
 
 // Jalur khusus dibagikan (tanpa filter login)
@@ -53,9 +77,9 @@ $routes->group('share/ujian', function ($routes) {
     $routes->get('get-ujian/(:segment)', 'UjianShareController::apiGetUjian/$1');
 });
 
-$routes->group('panel', ['filter' => 'role:admin,guru'], function ($routes) {
+$routes->group('panel', ['filter' => 'role:admin,guru,wali_kelas'], function ($routes) {
 
-    $routes->get('home', 'HomeController::index', ['filter' => 'role:admin,guru']);
+    $routes->get('home', 'HomeController::index', ['filter' => 'role:admin,guru,wali_kelas']);
     $routes->group('pengaturan', ['filter' => 'role:admin'], function ($routes) {
         $routes->group('sekolah', function ($routes) {
             $routes->get('/', 'SettingsController::index');
@@ -223,6 +247,19 @@ $routes->group('panel', ['filter' => 'role:admin,guru'], function ($routes) {
         $routes->post('create', 'KelasController::create');
         $routes->post('update/(:segment)', 'KelasController::update/$1');
         $routes->post('delete/(:segment)', 'KelasController::delete/$1');
+        $routes->get('students/(:segment)', 'KelasController::getStudents/$1');
+        $routes->get('eligible-students', 'KelasController::getEligibleStudents');
+        $routes->post('add-students', 'KelasController::addStudents');
+        $routes->post('remove-student', 'KelasController::removeStudent');
+    });
+
+    // Mata Pelajaran
+    $routes->group('mata-pelajaran', ['filter' => 'role:admin'], function ($routes) {
+        $routes->get('/', 'MataPelajaranController::index');
+        $routes->get('list', 'MataPelajaranController::getAll');
+        $routes->post('create', 'MataPelajaranController::create');
+        $routes->post('update/(:segment)', 'MataPelajaranController::update/$1');
+        $routes->post('delete/(:segment)', 'MataPelajaranController::delete/$1');
     });
 
     // Jurusan
@@ -288,6 +325,108 @@ $routes->group('panel', ['filter' => 'role:admin,guru'], function ($routes) {
         $routes->get('print-daftarhadir', 'RuangSesiController::print');
         $routes->get('printDenah', 'RuangSesiController::printDenah');
     });
+
+    // Layanan Akademik Admin/Guru
+    $routes->group('akademik', function ($routes) {
+        // Jadwal Pelajaran
+        $routes->group('jadwal', function ($routes) {
+            $routes->get('/', 'Akademik\JadwalController::index');
+            $routes->get('list', 'Akademik\JadwalController::list');
+            $routes->post('create', 'Akademik\JadwalController::create');
+            $routes->post('update/(:segment)', 'Akademik\JadwalController::update/$1');
+            $routes->post('delete/(:segment)', 'Akademik\JadwalController::delete/$1');
+            $routes->get('teachers-by-subject/(:segment)', 'Akademik\JadwalController::getTeachersBySubject/$1');
+        });
+        // Tugas & PR
+        $routes->group('tugas', function ($routes) {
+            $routes->get('/', 'Akademik\TugasController::index');
+            $routes->get('list', 'Akademik\TugasController::list');
+            $routes->post('create', 'Akademik\TugasController::create');
+            $routes->post('update/(:segment)', 'Akademik\TugasController::update/$1');
+            $routes->post('delete/(:segment)', 'Akademik\TugasController::delete/$1');
+            $routes->get('detail/(:segment)', 'Akademik\TugasController::detail/$1');
+            $routes->post('grade/(:segment)', 'Akademik\TugasController::gradeSubmission/$1');
+        });
+        // Absensi QR
+        $routes->group('absensi', function ($routes) {
+            $routes->get('/', 'Akademik\AbsensiController::index');
+            $routes->get('list', 'Akademik\AbsensiController::list');
+            $routes->post('create', 'Akademik\AbsensiController::create');
+            $routes->post('update/(:segment)', 'Akademik\AbsensiController::update/$1');
+            $routes->post('delete/(:segment)', 'Akademik\AbsensiController::delete/$1');
+            $routes->get('qr/(:segment)', 'Akademik\AbsensiController::qrSession/$1');
+            $routes->get('polling/(:segment)', 'Akademik\AbsensiController::livePolling/$1');
+            $routes->get('students/(:segment)', 'Akademik\AbsensiController::getPesertaByKelas/$1');
+        });
+        // Rapor Pelajar
+        $routes->group('rapor', function ($routes) {
+            $routes->get('/', 'Akademik\RaporController::index');
+            $routes->get('list', 'Akademik\RaporController::list');
+            $routes->post('save', 'Akademik\RaporController::save');
+            $routes->post('delete/(:segment)', 'Akademik\RaporController::delete/$1');
+        });
+        // Keuangan SPP
+        $routes->group('keuangan', ['filter' => 'role:admin'], function ($routes) {
+            $routes->get('/', 'Akademik\KeuanganController::index');
+            $routes->get('list', 'Akademik\KeuanganController::list');
+            $routes->post('invoice', 'Akademik\KeuanganController::generateInvoice');
+            $routes->post('pay/(:segment)', 'Akademik\KeuanganController::payInvoice/$1');
+            $routes->post('delete/(:segment)', 'Akademik\KeuanganController::delete/$1');
+        });
+    });
+
+    // Jurnal Keuangan
+    $routes->group('keuangan', ['filter' => 'role:admin'], function ($routes) {
+        $routes->group('jurnal', function ($routes) {
+            $routes->get('/', 'Keuangan\JurnalController::index');
+            $routes->get('list', 'Keuangan\JurnalController::list');
+            $routes->post('create', 'Keuangan\JurnalController::create');
+            $routes->post('delete/(:segment)', 'Keuangan\JurnalController::delete/$1');
+        });
+    });
+
+    // Kesiswaan (Prestasi & Pelanggaran)
+    $routes->group('kesiswaan', function ($routes) {
+        $routes->get('prestasi', 'KesiswaanController::prestasi');
+        $routes->get('prestasi/list', 'KesiswaanController::prestasiList');
+        $routes->post('prestasi/create', 'KesiswaanController::prestasiCreate');
+        $routes->post('prestasi/delete/(:segment)', 'KesiswaanController::prestasiDelete/$1');
+
+        $routes->get('pelanggaran', 'KesiswaanController::pelanggaran');
+        $routes->get('pelanggaran/list', 'KesiswaanController::pelanggaranList');
+        $routes->post('pelanggaran/create', 'KesiswaanController::pelanggaranCreate');
+        $routes->post('pelanggaran/delete/(:segment)', 'KesiswaanController::pelanggaranDelete/$1');
+
+        // Pengajuan Edit Data Siswa
+        $routes->get('pengajuan-edit', 'PengajuanEditSiswaController::index', ['filter' => 'role:admin']);
+        $routes->get('pengajuan-edit/list', 'PengajuanEditSiswaController::list', ['filter' => 'role:admin']);
+        $routes->post('pengajuan-edit/verifikasi', 'PengajuanEditSiswaController::verify', ['filter' => 'role:admin']);
+    });
+
+    // PPDB
+    $routes->group('ppdb', ['filter' => 'role:admin'], function ($routes) {
+        $routes->get('/', 'PpdbController::index');
+        $routes->get('list', 'PpdbController::list');
+        $routes->post('create', 'PpdbController::create');
+        $routes->post('update-status', 'PpdbController::updateStatus');
+        $routes->post('delete/(:segment)', 'PpdbController::delete/$1');
+    });
+
+    // Inventaris
+    $routes->group('inventaris', ['filter' => 'role:admin'], function ($routes) {
+        $routes->get('/', 'InventarisController::index');
+        $routes->get('list', 'InventarisController::list');
+        $routes->post('create', 'InventarisController::create');
+        $routes->post('delete/(:segment)', 'InventarisController::delete/$1');
+    });
+
+    // Ekstrakurikuler
+    $routes->group('ekstra', function ($routes) {
+        $routes->get('/', 'EkstraController::index');
+        $routes->get('list', 'EkstraController::list');
+        $routes->post('create', 'EkstraController::create');
+        $routes->post('delete/(:segment)', 'EkstraController::delete/$1');
+    });
 });
 
 $routes->group('api/exambro', ['namespace' => 'App\Controllers\Api'], function ($routes) {
@@ -311,7 +450,7 @@ $routes->group('public', ['namespace' => 'App\Controllers'], function ($routes) 
     $routes->get('banksoal', 'PublicBankSoalController::index');
 
     // Detail bank soal publik
-    $routes->get('banksoal/detail/(:num)', 'PublicBankSoalController::detail/$1');
+    $routes->get('banksoal/detail/(:segment)', 'PublicBankSoalController::detail/$1');
 
     // API list (untuk AJAX)
     $routes->get('banksoal/list', 'PublicBankSoalController::getAll');

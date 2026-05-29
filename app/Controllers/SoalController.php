@@ -35,6 +35,13 @@ class SoalController extends BaseController
         $topikModel = new TopikSoalModel();
         $bankSoalModel = new BankSoalModel();
         $bankSoal = $bankSoalModel->where('id', $bankSoalId)->first();
+        if (!$bankSoal) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+        if (!has_role('admin') && $bankSoal['created_by'] !== user_id()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
         $topikList = $topikModel->where('bank_soal_id', $bankSoalId)->findAll();
         $data = [
             'title' => 'Daftar Soal',

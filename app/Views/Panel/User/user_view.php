@@ -81,6 +81,16 @@
                     <select name="roles" class="form-control form-control-sm" required>
                         <option value="admin">Admin</option>
                         <option value="guru">Guru</option>
+                        <option value="wali_kelas">Wali Kelas</option>
+                    </select>
+                </div>
+                <div class="form-group mb-3" id="mapelGroup" style="display:none;">
+                    <label>Mata Pelajaran (Khusus Guru / Wali Kelas)</label>
+                    <select name="mata_pelajaran_id" class="form-control form-control-sm">
+                        <option value="">-- Pilih Mata Pelajaran --</option>
+                        <?php foreach ($mapels as $mapel): ?>
+                            <option value="<?= $mapel['id'] ?>"><?= esc($mapel['nama']) ?> (<?= esc($mapel['kode']) ?>)</option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group mb-3">
@@ -154,7 +164,14 @@
                     data: 'email'
                 },
                 {
-                    data: 'roles'
+                    data: 'roles',
+                    render: (data, type, row) => {
+                        let roleText = data === 'guru' ? 'Guru' : (data === 'wali_kelas' ? 'Wali Kelas' : data);
+                        if ((data === 'guru' || data === 'wali_kelas') && row.mata_pelajaran_nama) {
+                            return `${roleText} <br><small class="text-primary fw-bold">(${row.mata_pelajaran_nama})</small>`;
+                        }
+                        return roleText;
+                    }
                 },
                 {
                     data: 'is_active',
@@ -192,7 +209,8 @@
                     $('[name="username"]').val(item.username);
                     $('[name="email"]').val(item.email);
                     $('[name="full_name"]').val(item.full_name);
-                    $('[name="roles"]').val(item.roles);
+                    $('[name="roles"]').val(item.roles).trigger('change');
+                    $('[name="mata_pelajaran_id"]').val(item.mata_pelajaran_id || '');
                     $('[name="is_active"]').val(item.is_active);
                     $('[name="password"]').val(''); // kosongkan
                     $('.modal-title').text('Edit Pengguna');
@@ -222,11 +240,23 @@
                 }
             });
         });
+
+        // Toggle Mata Pelajaran input based on roles selection
+        $('[name="roles"]').on('change', function() {
+            const role = $(this).val();
+            if (role === 'guru' || role === 'wali_kelas') {
+                $('#mapelGroup').show();
+            } else {
+                $('#mapelGroup').hide();
+                $('[name="mata_pelajaran_id"]').val('');
+            }
+        });
     });
 
     function add() {
         save_method = 'add';
         $('#form')[0].reset();
+        $('#mapelGroup').hide();
         $('.modal-title').text('Tambah Pengguna');
         $('#modal_form').modal('show');
     }

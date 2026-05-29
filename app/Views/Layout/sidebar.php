@@ -43,195 +43,292 @@
 
  <?= $this->section('pagejs'); ?>
  <script type="text/javascript">
-     // Definisikan array yang berisi data menu dan submenu
-     const menuData = [{
-             name: 'Dashboard',
-             url: 'panel/home',
-             icon: 'home',
-             roles: ['admin', 'member']
-         },
-         {
-             name: 'Sinkronisasi',
-             url: 'panel/sinkronisasi',
-             icon: 'refresh-cw',
-             roles: ['admin']
-         },
-         {
-             name: 'Data Master',
-             icon: 'layers',
-             roles: ['admin'],
-             submenu: [{
-                     name: 'Jenis Ujian',
-                     url: 'panel/jenis-ujian',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Tingkat',
-                     url: 'panel/tingkat',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Kelas',
-                     url: 'panel/kelas',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Jurusan',
-                     url: 'panel/jurusan',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Agama',
-                     url: 'panel/agama',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Ruang',
-                     url: 'panel/ruang',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Sesi',
-                     url: 'panel/sesi',
-                     roles: ['admin']
-                 },
-
-             ]
-
-         },
-         {
-             name: 'Candy CBT',
-             icon: 'command',
-             roles: ['admin', 'guru'],
-             submenu: [{
-                     name: 'Peserta Ujian',
-                     url: 'panel/peserta',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Bank Soal',
-                     url: 'panel/banksoal',
-                     roles: ['admin', 'guru']
-                 },
-                 {
-                     name: 'Jadwal Ujian',
-                     url: 'panel/ujian',
-                     roles: ['admin', 'guru']
-                 },
-                 {
-                     name: 'Manajemen Ruang',
-                     url: 'panel/ruangsesi',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Kartu Peserta',
-                     url: 'panel/kartu',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Berita Acara',
-                     url: 'panel/beritaacara',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Analisis Butir Soal',
-                     url: 'panel/analisis-butir',
-                     roles: ['admin', 'guru']
-                 },
-
-
-             ]
-
-         },
-         {
-             name: 'QR Generator',
-             icon: 'slack',
-             roles: ['admin'],
-             submenu: [{
-                     name: 'Alamat Server',
-                     url: 'panel/qrgenerator/server',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Link Ujian',
-                     url: 'panel/qrgenerator/linkujian',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'SEB Config',
-                     url: 'panel/qrgenerator/sebconfig',
-                     roles: ['admin']
-                 },
-
-
-             ]
-
-         },
-         {
-             name: 'Exambro',
-             icon: 'codesandbox',
-             roles: ['admin'],
-             submenu: [{
-                     name: 'General Setting',
-                     url: 'panel/exambro/setting',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Blokir Aplikasi',
-                     url: 'panel/exambro/block',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Menu Link Aplikasi',
-                     url: 'panel/exambro/menu',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Halaman Informasi',
-                     url: 'panel/exambro/informasi',
-                     roles: ['admin']
-                 },
-             ]
-         },
-         {
-             name: 'Manajemen User',
-             icon: 'user',
-             url: 'panel/users',
-             roles: ['admin'],
-
-         },
-         {
-             name: 'Pengaturan',
-             icon: 'settings',
-             roles: ['admin'],
-             submenu: [{
-                     name: 'Identitas Sekolah',
-                     url: 'panel/pengaturan/sekolah',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Patch Updates',
-                     url: 'panel/pengaturan/patch',
-                     roles: ['admin']
-                 },
-                 {
-                     name: 'Database',
-                     url: 'panel/pengaturan/database',
-                     roles: ['admin']
-                 },
-                 //  {
-                 //      name: 'Whatsapp Device',
-                 //      url: 'pengaturan/whatsapp/device',
-                 //      roles: ['admin']
-                 //  },
-                 //  {
-                 //      name: 'Whatsapp Template',
-                 //      url: 'pengaturan/whatsapp/template',
-                 //      roles: ['admin']
-                 //  }
-             ]
-         }
-     ];
+      // Definisikan array yang berisi data menu dan submenu
+      const menuData = [
+          {
+              name: 'Dashboard',
+              url: 'panel/home',
+              icon: 'home',
+              roles: ['admin', 'guru', 'wali_kelas']
+          },
+          {
+              name: 'Profil Sekolah',
+              icon: 'info',
+              roles: ['admin', 'guru', 'wali_kelas'],
+              submenu: [
+                  {
+                      name: 'Identitas Sekolah',
+                      url: 'panel/pengaturan/sekolah',
+                      roles: ['admin']
+                  }
+              ]
+          },
+          {
+              name: 'Tata Usaha',
+              icon: 'briefcase',
+              roles: ['admin'],
+              submenu: [
+                  {
+                      name: 'Data Siswa',
+                      url: 'panel/peserta',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Data Guru & Staff',
+                      url: 'panel/users',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Data Kelas',
+                      url: 'panel/kelas',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Mata Pelajaran',
+                      url: 'panel/mata-pelajaran',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Tingkat Pelajar',
+                      url: 'panel/tingkat',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Jurusan & Program',
+                      url: 'panel/jurusan',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Data Agama',
+                      url: 'panel/agama',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Ruangan Kelas',
+                      url: 'panel/ruang',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Sesi Belajar',
+                      url: 'panel/sesi',
+                      roles: ['admin']
+                  }
+              ]
+          },
+          {
+              name: 'Presensi Kehadiran',
+              icon: 'calendar',
+              roles: ['admin', 'guru', 'wali_kelas'],
+              submenu: [
+                  {
+                      name: 'Kehadiran Siswa',
+                      url: 'panel/akademik/absensi',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  }
+              ]
+          },
+          {
+              name: 'LMS & Belajar',
+              icon: 'book-open',
+              roles: ['admin', 'guru', 'wali_kelas'],
+              submenu: [
+                  {
+                      name: 'Tugas & PR',
+                      url: 'panel/akademik/tugas',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  }
+              ]
+          },
+          {
+              name: 'CBT / Ujian',
+              icon: 'monitor',
+              roles: ['admin', 'guru', 'wali_kelas'],
+              submenu: [
+                  {
+                      name: 'Bank Soal',
+                      url: 'panel/banksoal',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  },
+                  {
+                      name: 'Jadwal Ujian',
+                      url: 'panel/ujian',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  },
+                  {
+                      name: 'Manajemen Ruang',
+                      url: 'panel/ruangsesi',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Kartu Peserta',
+                      url: 'panel/kartu',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Berita Acara',
+                      url: 'panel/beritaacara',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Analisis Butir Soal',
+                      url: 'panel/analisis-butir',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  }
+              ]
+          },
+          {
+              name: 'Nilai & Rapor',
+              icon: 'award',
+              roles: ['admin', 'guru', 'wali_kelas'],
+              submenu: [
+                  {
+                      name: 'Rapor Pelajar',
+                      url: 'panel/akademik/rapor',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  }
+              ]
+          },
+          {
+              name: 'Manajemen Kesiswaan',
+              icon: 'smile',
+              roles: ['admin', 'guru', 'wali_kelas'],
+              submenu: [
+                  {
+                      name: 'Prestasi Siswa',
+                      url: 'panel/kesiswaan/prestasi',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  },
+                  {
+                      name: 'Point & Pelanggaran',
+                      url: 'panel/kesiswaan/pelanggaran',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  },
+                  {
+                      name: 'Pengajuan Edit Data Siswa',
+                      url: 'panel/kesiswaan/pengajuan-edit',
+                      roles: ['admin']
+                  }
+              ]
+          },
+          {
+              name: 'Manajemen Keuangan',
+              icon: 'dollar-sign',
+              roles: ['admin'],
+              submenu: [
+                  {
+                      name: 'Tagihan & SPP Siswa',
+                      url: 'panel/akademik/keuangan',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Jurnal & Transparansi',
+                      url: 'panel/keuangan/jurnal',
+                      roles: ['admin']
+                  }
+              ]
+          },
+          {
+              name: 'Ekstrakurikuler',
+              icon: 'activity',
+              roles: ['admin', 'guru', 'wali_kelas'],
+              submenu: [
+                  {
+                      name: 'Kegiatan Ekstra',
+                      url: 'panel/ekstra',
+                      roles: ['admin', 'guru', 'wali_kelas']
+                  }
+              ]
+          },
+          {
+              name: 'Manajemen PPDB',
+              icon: 'user-plus',
+              roles: ['admin'],
+              submenu: [
+                  {
+                      name: 'Pendaftar PPDB',
+                      url: 'panel/ppdb',
+                      roles: ['admin']
+                  }
+              ]
+          },
+          {
+              name: 'Inventaris Sekolah',
+              icon: 'archive',
+              roles: ['admin'],
+              submenu: [
+                  {
+                      name: 'Pengelolaan Barang',
+                      url: 'panel/inventaris',
+                      roles: ['admin']
+                  }
+              ]
+          },
+          {
+              name: 'QR & Exambro Tools',
+              icon: 'tool',
+              roles: ['admin'],
+              submenu: [
+                  {
+                      name: 'Alamat Server QR',
+                      url: 'panel/qrgenerator/server',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Link Ujian QR',
+                      url: 'panel/qrgenerator/linkujian',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'SEB Config QR',
+                      url: 'panel/qrgenerator/sebconfig',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Exambro Settings',
+                      url: 'panel/exambro/setting',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Blokir Aplikasi',
+                      url: 'panel/exambro/block',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Menu Link Aplikasi',
+                      url: 'panel/exambro/menu',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Halaman Informasi',
+                      url: 'panel/exambro/informasi',
+                      roles: ['admin']
+                  }
+              ]
+          },
+          {
+              name: 'Sinkronisasi',
+              url: 'panel/sinkronisasi',
+              icon: 'refresh-cw',
+              roles: ['admin']
+          },
+          {
+              name: 'Pengaturan',
+              icon: 'settings',
+              roles: ['admin'],
+              submenu: [
+                  {
+                      name: 'Patch Updates',
+                      url: 'panel/pengaturan/patch',
+                      roles: ['admin']
+                  },
+                  {
+                      name: 'Database',
+                      url: 'panel/pengaturan/database',
+                      roles: ['admin']
+                  }
+              ]
+          }
+      ];
 
      // Fungsi untuk membuat elemen menu
      function createMenuElement(menu) {

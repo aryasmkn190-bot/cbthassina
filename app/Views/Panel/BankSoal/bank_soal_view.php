@@ -79,6 +79,15 @@
                     <input type="text" name="kode" class="form-control form-control-sm" required>
                 </div>
                 <div class="form-group mb-3">
+                    <label>Mata Pelajaran</label>
+                    <select name="mata_pelajaran_id" class="form-control form-control-sm" required>
+                        <option value="">-- Pilih Mata Pelajaran --</option>
+                        <?php foreach ($mapels as $mapel): ?>
+                            <option value="<?= $mapel['id'] ?>"><?= esc($mapel['nama']) ?> (<?= esc($mapel['kode']) ?>)</option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="form-group mb-3">
                     <label>Nama</label>
                     <input type="text" name="nama" class="form-control form-control-sm" required>
                 </div>
@@ -282,6 +291,9 @@
             ${row.is_active == 1 ? 'Aktif' : 'Nonaktif'}
           </span>
           <span class="text-muted">#${row.kode}</span>
+          <span class="text-primary fw-semibold d-flex align-items-center gap-1">
+            <i data-feather="book-open" style="width:14px; height:14px;"></i> ${row.mata_pelajaran_nama || 'Umum'}
+          </span>
           <span class="${row.is_public == 1 ? 'text-info' : 'text-warning'} d-flex align-items-center gap-1">
             ${row.is_public == 1 
               ? '<i data-feather="globe" style="width:14px; height:14px;"></i> Public' 
@@ -469,7 +481,7 @@
         $('#shareVisibility').val(item.is_public);
 
         // Buat link share (bisa pakai token unik jika mau aman)
-        const link = `<?= base_url() ?>panel/banksoal/public/${id}`;
+        const link = `<?= base_url() ?>public/banksoal/detail/${id}`;
         $('#shareLink').val(link);
 
         // Simpan ID bank soal sementara
@@ -521,6 +533,7 @@
         if (item) {
             $('[name="id"]').val(item.id);
             $('[name="kode"]').val(item.kode);
+            $('[name="mata_pelajaran_id"]').val(item.mata_pelajaran_id || '');
             $('[name="nama"]').val(item.nama);
             $('[name="deskripsi"]').val(item.deskripsi);
             $('[name="is_active"]').val(item.is_active);

@@ -19,6 +19,7 @@ class BankSoalModel extends Model
         'nama',
         'deskripsi',
         'created_by',
+        'mata_pelajaran_id',
         'is_active',
         'is_public',
         'created_at',
@@ -32,11 +33,12 @@ class BankSoalModel extends Model
     {
         // Ambil data bank soal utama
         $builder = $this->db->table($this->table . ' bs')
-            ->select('bs.*')
+            ->select('bs.*, mp.nama as mata_pelajaran_nama')
+            ->join('mata_pelajaran mp', 'mp.id = bs.mata_pelajaran_id', 'left')
             ->orderBy('bs.created_at', 'DESC');
 
         if ($userid) {
-            $builder->where('created_by', $userid);
+            $builder->where('bs.created_by', $userid);
         }
 
         $get = $builder->get()->getResultArray();

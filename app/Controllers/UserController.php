@@ -23,16 +23,22 @@ class UserController extends BaseController
     public function index()
     {
         $setting = $this->appSetting(); // opsional
+        $mapelModel = new \App\Models\MataPelajaranModel();
+        $mapels = $mapelModel->getActiveSorted();
         return view('Panel/User/user_view', [
             'setting' => $setting,
-            'title'   => 'Manajemen Pengguna'
+            'title'   => 'Manajemen Pengguna',
+            'mapels'  => $mapels
         ]);
     }
 
     public function getAll()
     {
         if ($this->request->isAJAX()) {
-            $data = $this->userModel->findAll();
+            $data = $this->userModel
+                ->select('users.*, mata_pelajaran.nama as mata_pelajaran_nama')
+                ->join('mata_pelajaran', 'mata_pelajaran.id = users.mata_pelajaran_id', 'left')
+                ->findAll();
             return $this->response->setJSON(['status' => true, 'data' => $data]);
         }
         return $this->fail('Hanya bisa diakses via AJAX.');
@@ -42,12 +48,13 @@ class UserController extends BaseController
     {
         if ($this->request->isAJAX()) {
             $rules = [
-                'username' => 'required|min_length[4]|max_length[50]|is_unique[users.username]',
-                'email'    => 'required|valid_email|is_unique[users.email]',
-                'full_name' => 'permit_empty|max_length[100]',
-                'password' => 'required|min_length[6]',
-                'roles'    => 'permit_empty',
-                'is_active' => 'required|in_list[0,1]'
+                'username'          => 'required|min_length[4]|max_length[50]|is_unique[users.username]',
+                'email'             => 'required|valid_email|is_unique[users.email]',
+                'full_name'         => 'permit_empty|max_length[100]',
+                'password'          => 'required|min_length[6]',
+                'roles'             => 'permit_empty',
+                'mata_pelajaran_id' => 'permit_empty|max_length[36]',
+                'is_active'         => 'required|in_list[0,1]'
             ];
 
             if (!$this->validate($rules)) {
@@ -55,14 +62,15 @@ class UserController extends BaseController
             }
 
             $this->userModel->insert([
-                'id'       => Uuid::uuid4()->toString(),
-                'username' => $this->request->getPost('username'),
-                'email'    => $this->request->getPost('email'),
-                'full_name' => $this->request->getPost('full_name'),
-                'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-                'roles'    => $this->request->getPost('roles'),
-                'is_active' => $this->request->getPost('is_active'),
-                'created_at' => date('Y-m-d H:i:s')
+                'id'                => Uuid::uuid4()->toString(),
+                'username'          => $this->request->getPost('username'),
+                'email'             => $this->request->getPost('email'),
+                'full_name'         => $this->request->getPost('full_name'),
+                'password'          => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                'roles'             => $this->request->getPost('roles'),
+                'mata_pelajaran_id' => $this->request->getPost('mata_pelajaran_id') ?: null,
+                'is_active'         => $this->request->getPost('is_active'),
+                'created_at'        => date('Y-m-d H:i:s')
             ]);
 
             return $this->response->setJSON(['status' => true, 'message' => 'Pengguna berhasil ditambahkan.']);
@@ -74,12 +82,13 @@ class UserController extends BaseController
     {
         if ($this->request->isAJAX()) {
             $rules = [
-                'username' => "required|min_length[4]|max_length[50]|is_unique[users.username,id,{$id}]",
-                'email'    => "required|valid_email|is_unique[users.email,id,{$id}]",
-                'full_name' => 'permit_empty|max_length[100]',
-                'password' => 'permit_empty|min_length[6]',
-                'roles'    => 'permit_empty',
-                'is_active' => 'required|in_list[0,1]'
+                'username'          => "required|min_length[4]|max_length[50]|is_unique[users.username,id,{$id}]",
+                'email'             => "required|valid_email|is_unique[users.email,id,{$id}]",
+                'full_name'         => 'permit_empty|max_length[100]',
+                'password'          => 'permit_empty|min_length[6]',
+                'roles'             => 'permit_empty',
+                'mata_pelajaran_id' => 'permit_empty|max_length[36]',
+                'is_active'         => 'required|in_list[0,1]'
             ];
 
             if (!$this->validate($rules)) {
@@ -87,12 +96,13 @@ class UserController extends BaseController
             }
 
             $data = [
-                'username' => $this->request->getPost('username'),
-                'email'    => $this->request->getPost('email'),
-                'full_name' => $this->request->getPost('full_name'),
-                'roles'    => $this->request->getPost('roles'),
-                'is_active' => $this->request->getPost('is_active'),
-                'updated_at' => date('Y-m-d H:i:s')
+                'username'          => $this->request->getPost('username'),
+                'email'             => $this->request->getPost('email'),
+                'full_name'         => $this->request->getPost('full_name'),
+                'roles'             => $this->request->getPost('roles'),
+                'mata_pelajaran_id' => $this->request->getPost('mata_pelajaran_id') ?: null,
+                'is_active'         => $this->request->getPost('is_active'),
+                'updated_at'        => date('Y-m-d H:i:s')
             ];
 
             if ($this->request->getPost('password')) {

@@ -21,6 +21,13 @@ class TopikSoalController extends BaseController
     {
         $setting = $this->appSetting();
         $bankSoalModel = new \App\Models\BankSoalModel();
+        $bankSoal = $bankSoalModel->find($banksoalid);
+        if (!$bankSoal) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+        if (!has_role('admin') && $bankSoal['created_by'] !== user_id()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
 
         $data = [
             'setting'     => $setting,

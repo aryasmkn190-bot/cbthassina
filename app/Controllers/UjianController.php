@@ -43,7 +43,7 @@ class UjianController extends BaseController
         $jenisUjianModel = new \App\Models\JenisUjianModel(); // ➕ Tambahan
 
         // Ambil data guru dan bank soal berdasarkan role
-        if ($role === 'admin') {
+        if (has_role('admin')) {
             $guruList = $guruModel->where('roles', 'guru')->findAll();
             $bankList = $bankSoalModel->findAll();
         } else {

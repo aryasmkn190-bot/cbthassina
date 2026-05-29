@@ -20,6 +20,7 @@ class UserModel extends Model
         'full_name',
         'password',
         'roles',
+        'mata_pelajaran_id',
         'is_active',
         'remember_token',
         'created_at',
