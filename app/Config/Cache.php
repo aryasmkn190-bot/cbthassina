@@ -68,7 +68,7 @@ class Cache extends BaseConfig
      *
      * NOTE: The default set is required for PSR-6 compliance.
      */
-    public string $reservedCharacters = '{}()/\@:';
+    public string $reservedCharacters = '{}()/\@';
 
     /**
      * --------------------------------------------------------------------------

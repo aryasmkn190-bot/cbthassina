@@ -81,7 +81,11 @@ class ExambroSettingController extends BaseController
             $data['updated_at'] = date('Y-m-d H:i:s');
 
             if (!empty($data) && $this->settingsModel->updateExambroSetting($id, $data)) {
-                service('cache')->delete('exambro_setting');
+                try {
+                    service('cache')->delete('exambro_setting');
+                } catch (\Throwable $e) {
+                    log_message('error', 'Redis delete exambro_setting failed: ' . $e->getMessage());
+                }
                 return $this->response->setJSON(['success' => true, 'message' => 'Pengaturan berhasil diperbarui.']);
             }
 

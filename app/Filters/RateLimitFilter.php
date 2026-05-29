@@ -13,37 +13,41 @@ class RateLimitFilter implements FilterInterface
 
     public function before(RequestInterface $request, $arguments = null)
     {
-        $cache = service('cache');
         $ip = $request->getIPAddress();
         
         // Build cache key based on IP
         $cacheKey = "ratelimit:" . md5($ip);
 
-        // Get current request count
-        $current = $cache->get($cacheKey);
+        try {
+            $cache = service('cache');
+            // Get current request count
+            $current = $cache->get($cacheKey);
 
-        if ($current === null) {
-            // First request in this window
-            $cache->save($cacheKey, 1, $this->window);
-        } else {
-            if ($current >= $this->limit) {
-                // Return 429 Too Many Requests response
-                $response = service('response');
-                $response->setStatusCode(429);
+            if ($current === null) {
+                // First request in this window
+                $cache->save($cacheKey, 1, $this->window);
+            } else {
+                if ($current >= $this->limit) {
+                    // Return 429 Too Many Requests response
+                    $response = service('response');
+                    $response->setStatusCode(429);
 
-                if ($request->isAJAX() || strpos($request->getHeaderLine('Accept'), 'application/json') !== false) {
-                    return $response->setJSON([
-                        'status'  => 'error',
-                        'message' => 'Terlalu banyak permintaan. Silakan tunggu beberapa saat.'
-                    ]);
+                    if ($request->isAJAX() || strpos($request->getHeaderLine('Accept'), 'application/json') !== false) {
+                        return $response->setJSON([
+                            'status'  => 'error',
+                            'message' => 'Terlalu banyak permintaan. Silakan tunggu beberapa saat.'
+                        ]);
+                    }
+
+                    return $response->setBody('<h1>429 Too Many Requests</h1><p>Terlalu banyak permintaan. Silakan tunggu beberapa saat sebelum mencoba kembali.</p>');
                 }
 
-                return $response->setBody('<h1>429 Too Many Requests</h1><p>Terlalu banyak permintaan. Silakan tunggu beberapa saat sebelum mencoba kembali.</p>');
+                // Increment request count
+                // Note: Keep the remaining TTL if possible, or just renew for simplicity
+                $cache->save($cacheKey, $current + 1, $this->window);
             }
-
-            // Increment request count
-            // Note: Keep the remaining TTL if possible, or just renew for simplicity
-            $cache->save($cacheKey, $current + 1, $this->window);
+        } catch (\Throwable $e) {
+            log_message('error', 'Redis RateLimitFilter failed, bypassing limit check: ' . $e->getMessage());
         }
     }
 

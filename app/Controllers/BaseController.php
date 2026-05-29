@@ -45,18 +45,40 @@ abstract class BaseController extends Controller
 
             $cache = service('cache');
 
-            $this->appSetting = $cache->get('app_setting');
+            // 1. App Setting
+            try {
+                $this->appSetting = $cache->get('app_setting');
+            } catch (\Throwable $e) {
+                log_message('error', 'Redis get app_setting failed, falling back to DB: ' . $e->getMessage());
+                $this->appSetting = null;
+            }
+
             if ($this->appSetting === null) {
                 $this->settings = new \App\Models\SettingsModel();
                 $this->appSetting = $this->settings->get_by_id(1);
-                $cache->save('app_setting', $this->appSetting, 86400); // 24 hours
+                try {
+                    $cache->save('app_setting', $this->appSetting, 86400); // 24 hours
+                } catch (\Throwable $e) {
+                    // Ignore cache write error
+                }
             }
 
-            $this->exambroSetting = $cache->get('exambro_setting');
+            // 2. Exambro Setting
+            try {
+                $this->exambroSetting = $cache->get('exambro_setting');
+            } catch (\Throwable $e) {
+                log_message('error', 'Redis get exambro_setting failed, falling back to DB: ' . $e->getMessage());
+                $this->exambroSetting = null;
+            }
+
             if ($this->exambroSetting === null) {
                 $this->exambrosettings = new \App\Models\ExambroSettingModel();
                 $this->exambroSetting = $this->exambrosettings->getExambroSetting(1);
-                $cache->save('exambro_setting', $this->exambroSetting, 86400); // 24 hours
+                try {
+                    $cache->save('exambro_setting', $this->exambroSetting, 86400); // 24 hours
+                } catch (\Throwable $e) {
+                    // Ignore cache write error
+                }
             }
         }
     }

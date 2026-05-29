@@ -44,10 +44,16 @@ class SoalModel extends Model
             }
         }
         $bankSoalIds = array_unique(array_filter($bankSoalIds));
-        $cache = service('cache');
-        foreach ($bankSoalIds as $bsId) {
-            $cache->delete("banksoal:questions:{$bsId}");
+        
+        try {
+            $cache = service('cache');
+            foreach ($bankSoalIds as $bsId) {
+                $cache->delete("banksoal:questions:{$bsId}");
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Redis clearCacheOnMutation failed: ' . $e->getMessage());
         }
+        
         return $data;
     }
 
@@ -64,10 +70,16 @@ class SoalModel extends Model
             }
         }
         $bankSoalIds = array_unique(array_filter($bankSoalIds));
-        $cache = service('cache');
-        foreach ($bankSoalIds as $bsId) {
-            $cache->delete("banksoal:questions:{$bsId}");
+        
+        try {
+            $cache = service('cache');
+            foreach ($bankSoalIds as $bsId) {
+                $cache->delete("banksoal:questions:{$bsId}");
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Redis clearCacheOnDelete failed: ' . $e->getMessage());
         }
+        
         return $data;
     }
 
@@ -75,14 +87,34 @@ class SoalModel extends Model
     {
         if (empty($soalIds)) return [];
 
-        $cache = service('cache');
-        $cacheKey = "banksoal:questions:{$bankSoalId}";
-        $cachedPool = $cache->get($cacheKey);
+        $cachedPool = null;
+        try {
+            $cache = service('cache');
+            $cacheClass = get_class($cache);
+            $isDummy = (strpos($cacheClass, 'DummyHandler') !== false);
+            if (!$isDummy) {
+                $cacheKey = "banksoal:questions:{$bankSoalId}";
+                $cachedPool = $cache->get($cacheKey);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Redis get banksoal questions failed, falling back to MySQL: ' . $e->getMessage());
+            $cachedPool = null;
+        }
 
         if ($cachedPool === null) {
             $cachedPool = $this->getSoalWithOpsi($bankSoalId);
-            // Cache for 2 hours (7200 seconds)
-            $cache->save($cacheKey, $cachedPool, 7200);
+            
+            try {
+                $cache = service('cache');
+                $cacheClass = get_class($cache);
+                $isDummy = (strpos($cacheClass, 'DummyHandler') !== false);
+                if (!$isDummy && !empty($cachedPool)) {
+                    $cacheKey = "banksoal:questions:{$bankSoalId}";
+                    $cache->save($cacheKey, $cachedPool, 7200); // 2 hours
+                }
+            } catch (\Throwable $e) {
+                // Ignore cache save error
+            }
         }
 
         // Map the cached pool by soal ID for easy lookup

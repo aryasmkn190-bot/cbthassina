@@ -121,7 +121,11 @@ class SettingsController extends BaseController
         $exec = $this->Settings_model->settings_update(['id' => $id], $data);
 
         if ($exec) {
-            service('cache')->delete('app_setting');
+            try {
+                service('cache')->delete('app_setting');
+            } catch (\Throwable $e) {
+                log_message('error', 'Redis delete app_setting failed: ' . $e->getMessage());
+            }
             return $this->response->setJSON(['success' => true, 'message' => 'User update successfully']);
         } else {
             //return $this->response->setJSON($error);

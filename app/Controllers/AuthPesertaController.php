@@ -104,8 +104,12 @@ class AuthPesertaController extends BaseController
         ]);
 
         // Save session ID to Redis for concurrent session check
-        $sessionID = session_id();
-        service('cache')->save("active_session_peserta:{$user['id']}", $sessionID, 86400);
+        try {
+            $sessionID = session_id();
+            service('cache')->save("active_session_peserta:{$user['id']}", $sessionID, 86400);
+        } catch (\Throwable $e) {
+            log_message('error', 'Redis save active_session_peserta failed: ' . $e->getMessage());
+        }
 
         return $this->response->setJSON([
             'status'   => 'success',
